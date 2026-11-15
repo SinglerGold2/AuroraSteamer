@@ -12,7 +12,13 @@ There is a small window for the two settings that matter: the path to
 
 | German | English |
 | --- | --- |
-| ![Window in German](assets/aurorasteamer-window-de-v2.png) | ![Window in English](assets/aurorasteamer-window-en-v2.png) |
+| ![Window in German](assets/aurorasteamer-window-de-v3.png) | ![Window in English](assets/aurorasteamer-window-en-v3.png) |
+
+The game picker, with the AppIDs taken from the Steam manifests:
+
+| German | English |
+| --- | --- |
+| ![Game picker in German](assets/aurorasteamer-games-de.png) | ![Game picker in English](assets/aurorasteamer-games-en.png) |
 
 ## Why this is needed
 
@@ -83,8 +89,9 @@ The window has three parts:
   you install the game again later, the exception is still there and Aurora stays
   out of it without any further action. Uninstalled games simply disappear from
   the picker, not from the list.
-- **Wächter: an / aus** - switches the watcher service on or off. Off means
-  Aurora is not started automatically; the exception list stays as it is.
+- **AuroraSteamer-Wächter: an / aus** - switches the watcher service on or off;
+  the button is green while it runs and red while it is off. Off means Aurora is
+  not started automatically; the exception list stays as it is.
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so

@@ -18,8 +18,9 @@ import urllib.request
 import gi
 
 gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
 gi.require_version("Pango", "1.0")
-from gi.repository import GLib, Gtk, Pango  # noqa: E402
+from gi.repository import Gdk, GLib, Gtk, Pango  # noqa: E402
 
 CONFIG = os.path.expanduser("~/.config/aurorasteamer.conf")
 IGNORE = os.path.expanduser("~/.config/aurora-ignore.txt")
@@ -39,9 +40,9 @@ TEXTS = {
         "subtitle": "Startet Aurora automatisch mit jedem Steam-Spiel.\n"
                     "Spiele, die es nicht sollen, hier eintragen.",
         "language": "Sprache",
-        "watcher": "Wächter",
-        "watcher_state_on": "Wächter: an",
-        "watcher_state_off": "Wächter: aus",
+        "watcher": "AuroraSteamer-Wächter",
+        "watcher_state_on": "AuroraSteamer-Wächter: an",
+        "watcher_state_off": "AuroraSteamer-Wächter: aus",
         "watcher_on": "Aurora startet automatisch mit jedem Steam-Spiel",
         "watcher_off": "Aurora startet nicht automatisch",
         "path": "Pfad zu Aurora.exe",
@@ -75,9 +76,9 @@ TEXTS = {
         "subtitle": "Starts Aurora automatically with every Steam game.\n"
                     "Games that should not be started with it go below.",
         "language": "Language",
-        "watcher": "Watcher",
-        "watcher_state_on": "Watcher: on",
-        "watcher_state_off": "Watcher: off",
+        "watcher": "AuroraSteamer watcher",
+        "watcher_state_on": "AuroraSteamer watcher: on",
+        "watcher_state_off": "AuroraSteamer watcher: off",
         "watcher_on": "Aurora starts automatically with every Steam game",
         "watcher_off": "Aurora does not start automatically",
         "path": "Path to Aurora.exe",
@@ -298,6 +299,33 @@ class Row:
             self.name_label.set_text(self.window_ref.t("notfound"))
 
 
+WATCHER_CSS = b"""
+button.watcher-on, button.watcher-on:hover, button.watcher-on:checked {
+    background-color: #2e7d32; color: #ffffff; font-weight: bold;
+}
+button.watcher-off, button.watcher-off:hover, button.watcher-off:checked {
+    background-color: #b3261e; color: #ffffff; font-weight: bold;
+}
+"""
+
+
+def install_css():
+    provider = Gtk.CssProvider()
+    provider.load_from_data(WATCHER_CSS)
+    screen = Gdk.Screen.get_default()
+    if screen is not None:
+        Gtk.StyleContext.add_provider_for_screen(
+            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+
+def apply_watcher_style(button, active):
+    context = button.get_style_context()
+    context.remove_class("watcher-on")
+    context.remove_class("watcher-off")
+    context.add_class("watcher-on" if active else "watcher-off")
+
+
 def service_active():
     """True when the watcher service is running."""
     result = subprocess.run(
@@ -419,6 +447,7 @@ class Window(Gtk.Window):
         watcher_row.pack_start(self.watcher_label, True, True, 0)
         self.watcher_button = Gtk.ToggleButton()
         self.watcher_button.set_active(service_active())
+        apply_watcher_style(self.watcher_button, self.watcher_button.get_active())
         self.watcher_button.connect("toggled", self.on_watcher_toggled)
         watcher_row.pack_end(self.watcher_button, False, False, 0)
         outer.pack_start(watcher_row, False, False, 0)
@@ -514,9 +543,7 @@ class Window(Gtk.Window):
         self.language_label.set_text(self.t("language") + ":")
         self.language_button.set_label("Deutsch" if self.language == "de" else "English")
         self.watcher_label.set_text(self.t("watcher"))
-        self.watcher_button.set_label(
-            self.t("watcher_state_on") if self.watcher_button.get_active() else self.t("watcher_state_off")
-        )
+        self.set_watcher_button(self.watcher_button.get_active())
         self.subtitle.set_text(self.t("subtitle"))
         self.path_label.set_text(self.t("path"))
         self.browse_button.set_label(self.t("browse"))
@@ -533,9 +560,15 @@ class Window(Gtk.Window):
             if not row.name:
                 row.set_name(None)
 
+    def set_watcher_button(self, active):
+        self.watcher_button.set_label(
+            self.t("watcher_state_on") if active else self.t("watcher_state_off")
+        )
+        apply_watcher_style(self.watcher_button, active)
+
     def on_watcher_toggled(self, button):
         active = button.get_active()
-        button.set_label(self.t("watcher_state_on") if active else self.t("watcher_state_off"))
+        self.set_watcher_button(active)
         if getattr(self, "loading", False):
             return
         action = "enable" if active else "disable"
@@ -672,6 +705,7 @@ class Window(Gtk.Window):
 
 
 def main():
+    install_css()
     app = Window()
     app.connect("destroy", Gtk.main_quit)
     app.show_all()
