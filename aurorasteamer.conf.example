@@ -1,7 +1,7 @@
 # Copy this file to ~/.config/aurorasteamer.conf and adjust the values.
 # Every setting is optional; the defaults are shown here.
 
-# Language of the configuration window: "de" or "en".
+# Language of the configuration window, e.g. "de", "en" or "tlh".
 # Empty means: follow the system locale.
 LANGUAGE=
 
@@ -20,6 +20,6 @@ POLL_IDLE_INTERVAL=30
 # Seconds to wait after the game was detected before Aurora starts.
 START_DELAY=5
 
-# Log file and state file.
-LOG_FILE="$HOME/.local/state/aurora-steam-watch.log"
-STATE_FILE="$HOME/.local/state/aurora-steam-watch.state"
+# Where the watcher remembers the game it started Aurora for. Optional.
+# The default is a file in the runtime directory, cleared at logout.
+# STATE_FILE="$XDG_RUNTIME_DIR/aurorasteamer.state"

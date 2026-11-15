@@ -36,11 +36,10 @@ POLL_IDLE_INTERVAL="${POLL_IDLE_INTERVAL:-30}"
 # Seconds to wait before starting Aurora after the game was detected.
 START_DELAY="${START_DELAY:-5}"
 
-# Where to write the log.
-LOG_FILE="${LOG_FILE:-$HOME/.local/state/aurorasteamer.log}"
-
-# Remembers which game Aurora was started for, as "appid pid".
-STATE_FILE="${STATE_FILE:-$HOME/.local/state/aurorasteamer.state}"
+# Remembers which game Aurora was started for, as "appid pid". Kept in the
+# runtime directory, so nothing is written to the home directory and the file
+# disappears when the session ends.
+STATE_FILE="${STATE_FILE:-${XDG_RUNTIME_DIR:-/tmp}/aurorasteamer.state}"
 
 CONFIG_FILE="${CONFIG_FILE:-$HOME/.config/aurorasteamer.conf}"
 [ -f "$CONFIG_FILE" ] && . "$CONFIG_FILE"
@@ -52,10 +51,11 @@ CONFIG_FILE="${CONFIG_FILE:-$HOME/.config/aurorasteamer.conf}"
 DRY_RUN=0
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 
-mkdir -p "$(dirname "$LOG_FILE")" "$(dirname "$STATE_FILE")"
+mkdir -p "$(dirname "$STATE_FILE")"
 
+# Everything goes to stdout, which the systemd unit collects in the journal.
 log() {
-    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >> "$LOG_FILE"
+    printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
 }
 
 say() {

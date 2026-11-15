@@ -8,7 +8,7 @@ BIN_DIR="$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config"
 UNIT_DIR="$CONFIG_DIR/systemd/user"
 
-mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local/share/applications" "$HOME/.local/share/doc/aurorasteamer" "$HOME/.local/share/icons/hicolor/scalable/apps"
+mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/share/applications" "$HOME/.local/share/doc/aurorasteamer" "$HOME/.local/share/icons/hicolor/scalable/apps"
 
 install -m 755 "$REPO_DIR/aurorasteamer.sh" "$BIN_DIR/aurorasteamer.sh"
 install -m 755 "$REPO_DIR/aurorasteamer-gui.py" "$BIN_DIR/aurorasteamer-gui.py"
@@ -47,5 +47,5 @@ gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || tr
 systemctl --user daemon-reload
 systemctl --user enable --now aurorasteamer.service
 
-echo "installed. check the log with:"
-echo "  tail -f $HOME/.local/state/aurorasteamer.log"
+echo "installed. check the journal with:"
+echo "  journalctl --user -u aurorasteamer.service -f"

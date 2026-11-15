@@ -13,5 +13,7 @@ First release.
 - Settings dialog for the poll interval and the start delay.
 - Translations are plain JSON files in `locale/`; German, English and Klingon
   ship with the release.
+- Log goes to the systemd journal, runtime state to `$XDG_RUNTIME_DIR`; the home
+  directory only gets the config and the exception list.
 - `install.sh` sets up the watcher, the window, the menu entry, the icons and the
   translations and enables the systemd user service.

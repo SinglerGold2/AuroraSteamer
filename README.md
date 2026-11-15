@@ -180,16 +180,17 @@ optional and commented in `aurorasteamer.conf.example`:
 | `IGNORE_FILE` | `$HOME/.config/aurora-ignore.txt` | Exception list |
 | `POLL_INTERVAL` | `10` | Seconds between checks |
 | `START_DELAY` | `5` | Seconds to wait before Aurora starts |
-| `LOG_FILE` | `$HOME/.local/state/aurorasteamer.log` | Log file |
-| `STATE_FILE` | `$HOME/.local/state/aurorasteamer.state` | Remembers the running instance |
+| `STATE_FILE` | `$XDG_RUNTIME_DIR/aurorasteamer.state` | Remembers the running instance |
 
 ## Troubleshooting
 
 ```bash
-tail -f ~/.local/state/aurorasteamer.log
+journalctl --user -u aurorasteamer.service -f
 systemctl --user status aurorasteamer.service
 ```
 
+- Log and state live in the journal and in `$XDG_RUNTIME_DIR`; nothing is written
+  to your home directory apart from the config and the exception list.
 - *No game detected*: the game must run through Proton, not natively.
 - *Aurora starts but lists nothing*: the game may use a different Wine prefix
   than expected; check the log for the detected prefix.
