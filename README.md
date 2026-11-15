@@ -121,6 +121,21 @@ right-click the game, *Properties*, *Updates* - the App-ID is shown at the botto
 5. When the game changes, the previous instance is stopped and a new one starts
    in the new prefix.
 
+## Settings dialog
+
+The *Config* button at the bottom opens a small dialog with the two values that
+control the watcher:
+
+| Value | Range | Effect |
+| --- | --- | --- |
+| Poll interval | 1 to 3600 seconds | How often the watcher looks for a running Steam game. 10 seconds is plenty; the check costs about 40 ms. |
+| Start delay | 0 to 300 seconds | How long Aurora waits after the game was detected. Useful for slow games that need longer to load. |
+
+The dialog shows the path of the file it writes to, `~/.config/aurorasteamer.conf`.
+Saving restarts the watcher, so the new values apply to the next game start.
+While no game is running the watcher polls less often (`POLL_IDLE_INTERVAL`,
+default 30 seconds); that value is only in the file, not in the dialog.
+
 ## Translations
 
 The window reads its texts from `locale/*.json`, next to the installed program in
@@ -133,6 +148,18 @@ are there, so adding `fr.json` adds French to the menu - no code change needed:
   "texts": { "title": "AuroraSteamer", "save": "Enregistrer", "...": "..." }
 }
 ```
+
+Shipped languages:
+
+```
+locale/de.json   Deutsch
+locale/en.json   English
+```
+
+Every file needs a `name` for the language menu and a `texts` object with the
+same keys as `locale/en.json`. Missing keys fall back to English, so a partial
+translation is fine. The same folder exists in the repository, which is where you
+would add a new language for a pull request.
 
 Missing keys fall back to English.
 
