@@ -108,7 +108,7 @@ class Window(Gtk.Window):
     def __init__(self):
         super().__init__(title="AuroraSteamer")
         self.set_border_width(12)
-        self.set_default_size(560, 520)
+        self.set_default_size(660, 560)
 
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.add(outer)
@@ -131,7 +131,7 @@ class Window(Gtk.Window):
         self.exe_entry.set_hexpand(True)
         exe_row.pack_start(self.exe_entry, True, True, 0)
 
-        browse = Gtk.Button(label="Durchsuchen...")
+        browse = Gtk.Button(label="Durchsuchen...", width_request=140)
         browse.connect("clicked", self.on_browse)
         exe_row.pack_start(browse, False, False, 0)
         outer.pack_start(exe_row, False, False, 0)
