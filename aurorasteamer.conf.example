@@ -1,5 +1,9 @@
-# Copy this file to ~/.config/aurora-steam-watcher.conf and adjust the values.
+# Copy this file to ~/.config/aurorasteamer.conf and adjust the values.
 # Every setting is optional; the defaults are shown here.
+
+# Language of the configuration window: "de" or "en".
+# Empty means: follow the system locale.
+LANGUAGE=
 
 # Path to Aurora.exe
 AURORA_EXE="$HOME/Aurora/Aurora.exe"

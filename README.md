@@ -49,6 +49,10 @@ Start it from the application menu (**AuroraSteamer**) or with:
 aurorasteamer-gui.py
 ```
 
+The window is available in German and English. The language is picked from the
+system locale on first start and can be changed with the selector at the top; the
+choice is stored in the configuration file.
+
 The window has three parts:
 
 - **Path to Aurora.exe** - use *Durchsuchen...* if you are unsure where it is.
@@ -87,6 +91,7 @@ optional and commented in `aurorasteamer.conf.example`:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
+| `LANGUAGE` | system locale | Language of the window, `de` or `en` |
 | `AURORA_EXE` | `$HOME/Aurora/Aurora.exe` | Path to Aurora.exe |
 | `IGNORE_FILE` | `$HOME/.config/aurora-ignore.txt` | Exception list |
 | `POLL_INTERVAL` | `10` | Seconds between checks |
