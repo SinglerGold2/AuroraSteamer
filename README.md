@@ -68,8 +68,10 @@ The window has three parts:
 - **Path to Aurora.exe** - use *Durchsuchen...* if you are unsure where it is.
 - **AppIDs** - add an AppID and the window asks the Steam store for the game
   name and shows it next to the number, so you can see what you excluded.
-  Names are cached in `~/.cache/aurorasteamer/names.json`; without a network
-  connection the ID is shown as unknown, nothing breaks.
+  Names are cached in `~/.cache/aurorasteamer/names.json`. An AppID that does
+  not exist in the store is marked as *not found*, a failed lookup as *unknown*;
+  the *Refresh names* button tries the unknown ones again. Nothing breaks
+  without a network connection.
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so

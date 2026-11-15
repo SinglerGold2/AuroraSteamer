@@ -48,6 +48,8 @@ TEXTS = {
         "add": "Hinzufügen",
         "remove": "Entfernen",
         "unknown": "unbekannt",
+        "notfound": "kein Treffer",
+        "refresh": "Namen aktualisieren",
         "loading": "wird geladen...",
         "invalid": "Bitte eine Zahl eingeben.",
         "duplicate": "Diese AppID steht schon in der Liste.",
@@ -71,6 +73,8 @@ TEXTS = {
         "add": "Add",
         "remove": "Remove",
         "unknown": "unknown",
+        "notfound": "not found",
+        "refresh": "Refresh names",
         "loading": "loading...",
         "invalid": "Please enter a number.",
         "duplicate": "This AppID is already in the list.",
@@ -170,8 +174,8 @@ def fetch_name(appid):
         return None
     entry = data.get(str(appid), {})
     if not entry.get("success"):
-        return None
-    return entry.get("data", {}).get("name")
+        return ""
+    return entry.get("data", {}).get("name") or ""
 
 
 class Row:
@@ -200,9 +204,14 @@ class Row:
         self.window_ref = window
         self.set_name(name)
 
-    def set_name(self, name):
+    def set_name(self, name, failed=False):
         self.name = name
-        self.name_label.set_text(name if name else self.window_ref.t("unknown"))
+        if name:
+            self.name_label.set_text(name)
+        elif failed:
+            self.name_label.set_text(self.window_ref.t("unknown"))
+        else:
+            self.name_label.set_text(self.window_ref.t("notfound"))
 
 
 class Window(Gtk.Window):
@@ -282,6 +291,9 @@ class Window(Gtk.Window):
         self.add_button = Gtk.Button()
         self.add_button.connect("clicked", self.on_add)
         self.add_box.pack_start(self.add_button, False, False, 0)
+        self.refresh_button = Gtk.Button()
+        self.refresh_button.connect("clicked", self.on_refresh)
+        self.add_box.pack_start(self.refresh_button, False, False, 0)
         outer.pack_start(self.add_box, False, False, 0)
 
         # Message line for validation feedback
@@ -320,6 +332,7 @@ class Window(Gtk.Window):
         self.ids_label.set_text(self.t("ids"))
         self.add_entry.set_placeholder_text(self.t("add_placeholder"))
         self.add_button.set_label(self.t("add"))
+        self.refresh_button.set_label(self.t("refresh"))
         self.help_button.set_label(self.t("help"))
         self.close_button.set_label(self.t("close"))
         self.save_button.set_label(self.t("save"))
@@ -368,14 +381,14 @@ class Window(Gtk.Window):
 
     def _resolve_worker(self, row):
         name = fetch_name(row.appid)
-        if name:
+        if name is not None:
             self.cache[row.appid] = name
             save_cache(self.cache)
         GLib.idle_add(self._resolve_done, row, name)
 
     def _resolve_done(self, row, name):
         if row in self.rows:
-            row.set_name(name)
+            row.set_name(name, failed=name is None)
         return False
 
     def on_add(self, _widget):
@@ -389,6 +402,12 @@ class Window(Gtk.Window):
             return
         self.add_row(text, self.cache.get(text))
         self.add_entry.set_text("")
+
+    def on_refresh(self, _button):
+        self.message.set_text("")
+        for row in self.rows:
+            if not row.name:
+                self.resolve_name(row)
 
     def on_remove_row(self, _button, row):
         if row in self.rows:
