@@ -1,6 +1,6 @@
 [Unit]
 Description=Starts Aurora automatically with every Steam game
-Documentation=https://github.com/SinglerGold2/aurora-steamer
+Documentation=https://github.com/SinglerGold2/AuroraSteamer
 After=graphical-session.target
 PartOf=graphical-session.target
 

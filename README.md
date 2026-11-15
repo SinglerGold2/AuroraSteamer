@@ -32,8 +32,8 @@ listed as an exception.
 ## Installation
 
 ```bash
-git clone https://github.com/SinglerGold2/aurora-steamer.git
-cd aurora-steamer
+git clone https://github.com/SinglerGold2/AuroraSteamer.git
+cd AuroraSteamer
 ./install.sh
 ```
 
