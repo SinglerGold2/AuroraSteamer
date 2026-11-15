@@ -151,14 +151,23 @@ class Window(Gtk.Window):
         self.language_label = Gtk.Label()
         self.language_row.pack_start(self.language_label, False, False, 0)
 
-        self.language_combo = Gtk.ComboBoxText()
-        self.language_combo.append("de", "Deutsch")
-        self.language_combo.append("en", "English")
-        self.language_combo.set_active_id(self.language)
-        self.language_combo.set_size_request(150, -1)
-        self.language_combo.set_popup_fixed_width(False)
-        self.language_combo.connect("changed", self.on_language_changed)
-        self.language_row.pack_start(self.language_combo, False, False, 0)
+        # A menu button with a popover instead of a combo box: the popover is
+        # drawn inside the window and is not clipped by the compositor.
+        self.language_button = Gtk.MenuButton()
+        self.language_button.set_size_request(150, -1)
+
+        popover = Gtk.Popover()
+        popover_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        popover_box.set_border_width(4)
+        for code, label in (("de", "Deutsch"), ("en", "English")):
+            button = Gtk.ModelButton(label=label)
+            button.connect("clicked", self.on_language_selected, code)
+            popover_box.pack_start(button, False, False, 0)
+        popover_box.show_all()
+        popover.add(popover_box)
+        self.language_button.set_popover(popover)
+
+        self.language_row.pack_start(self.language_button, False, False, 0)
 
         outer.pack_start(self.language_row, False, False, 0)
 
@@ -220,6 +229,7 @@ class Window(Gtk.Window):
     def apply_language(self):
         self.set_title(self.t("title"))
         self.language_label.set_text(self.t("language") + ":")
+        self.language_button.set_label("Deutsch" if self.language == "de" else "English")
         self.subtitle.set_text(self.t("subtitle"))
         self.path_label.set_text(self.t("path"))
         self.browse_button.set_label(self.t("browse"))
@@ -228,11 +238,11 @@ class Window(Gtk.Window):
         self.cancel_button.set_label(self.t("cancel"))
         self.save_button.set_label(self.t("save"))
 
-    def on_language_changed(self, combo):
-        language = combo.get_active_id()
+    def on_language_selected(self, _button, language):
         if language in TEXTS:
             self.language = language
             self.apply_language()
+        self.language_button.get_popover().hide()
 
     def on_browse(self, _button):
         dialog = Gtk.FileChooserDialog(
