@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # aurorasteamer - starts Aurora inside the Proton prefix of the running
 # Steam game, so trainers can attach to the game process.
 #

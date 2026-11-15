@@ -135,4 +135,4 @@ systemctl --user status aurorasteamer.service
 
 ## License
 
-MIT
+GPL-3.0-or-later. See [LICENSE](LICENSE).

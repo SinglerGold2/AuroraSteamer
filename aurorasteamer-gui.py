@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
 # Configuration window for AuroraSteamer.
 #
 # It edits the path to Aurora.exe, manages the exception list of Steam AppIDs
