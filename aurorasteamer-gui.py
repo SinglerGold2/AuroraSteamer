@@ -22,6 +22,12 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("Pango", "1.0")
 from gi.repository import Gdk, GLib, Gtk, Pango  # noqa: E402
 
+try:
+    gi.require_version("WebKit2", "4.1")
+    from gi.repository import WebKit2  # noqa: E402
+except (ValueError, ImportError):
+    WebKit2 = None
+
 CONFIG = os.path.expanduser("~/.config/aurorasteamer.conf")
 IGNORE = os.path.expanduser("~/.config/aurora-ignore.txt")
 CACHE = os.path.expanduser("~/.cache/aurorasteamer/names.json")
@@ -297,6 +303,129 @@ def service_active():
         capture_output=True, text=True, check=False,
     )
     return result.stdout.strip() == "active"
+
+
+
+README_CSS = """
+body { background: #1b1b1b; color: #e6e6e6; font-family: sans-serif; margin: 18px; }
+h1, h2, h3 { color: #ffffff; margin-top: 18px; }
+a { color: #7aa7ff; }
+code, pre { background: #262626; color: #e6e6e6; border-radius: 4px; }
+code { padding: 1px 4px; }
+pre { padding: 10px; }
+img { max-width: 100%; }
+li { margin: 2px 0; }
+"""
+
+
+def markdown_to_html(text):
+    """Small markdown subset: enough for the project README."""
+    import html as html_module
+    import re
+
+    def inline(value):
+        # keep simple raw <img ...> tags from the README, escape the rest
+        raw = []
+
+        def keep(match):
+            raw.append(match.group(0))
+            return f"\x00{len(raw) - 1}\x00"
+
+        value = re.sub(r"<img[^>]*>", keep, value)
+        value = html_module.escape(value)
+        value = re.sub(r"\x00(\d+)\x00", lambda m: raw[int(m.group(1))], value)
+        value = re.sub(r"!\[([^\]]*)\]\(([^)]+)\)", r'<img src="\2" alt="\1">', value)
+        value = re.sub(r"\[([^\]]*)\]\(([^)]+)\)", r'<a href="\2">\1</a>', value)
+        value = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", value)
+        value = re.sub(r"(?<!\*)\*([^*]+)\*(?!\*)", r"<em>\1</em>", value)
+        value = re.sub(r"`([^`]+)`", r"<code>\1</code>", value)
+        return value
+
+    out = []
+    paragraph = []
+    list_kind = None
+    in_code = False
+
+    def flush_paragraph():
+        if paragraph:
+            out.append("<p>" + inline(" ".join(paragraph)) + "</p>")
+            paragraph.clear()
+
+    def close_list():
+        nonlocal list_kind
+        if list_kind:
+            out.append(f"</{list_kind}>")
+            list_kind = None
+
+    for line in text.splitlines():
+        stripped = line.strip()
+
+        if stripped.startswith("```"):
+            flush_paragraph()
+            close_list()
+            out.append("</code></pre>" if in_code else "<pre><code>")
+            in_code = not in_code
+            continue
+        if in_code:
+            out.append(html_module.escape(line))
+            continue
+
+        if not stripped:
+            flush_paragraph()
+            continue
+
+        heading = re.match(r"^(#{1,6})\s+(.*)$", stripped)
+        if heading:
+            flush_paragraph()
+            close_list()
+            level = len(heading.group(1))
+            out.append(f"<h{level}>{inline(heading.group(2))}</h{level}>")
+            continue
+
+        bullet = re.match(r"^[-*]\s+(.*)$", stripped)
+        if bullet:
+            flush_paragraph()
+            if list_kind != "ul":
+                close_list()
+                out.append("<ul>")
+                list_kind = "ul"
+            out.append(f"<li>{inline(bullet.group(1))}")
+            continue
+
+        numbered = re.match(r"^\d+[.)]\s+(.*)$", stripped)
+        if numbered:
+            flush_paragraph()
+            if list_kind != "ol":
+                close_list()
+                out.append("<ol>")
+                list_kind = "ol"
+            out.append(f"<li>{inline(numbered.group(1))}")
+            continue
+
+        if list_kind and not paragraph:
+            # continuation of the current item
+            if out and out[-1].startswith("<li>"):
+                out[-1] = out[-1] + " " + inline(stripped)
+                continue
+
+        if list_kind and out and out[-1].endswith("</li>") is False and out[-1].startswith("<li>"):
+            out[-1] = out[-1] + " " + inline(stripped)
+            continue
+
+        paragraph.append(stripped)
+
+    flush_paragraph()
+    close_list()
+    if in_code:
+        out.append("</code></pre>")
+
+    # close list items that are still open
+    result = []
+    for chunk in out:
+        if chunk.startswith("<li>") and not chunk.endswith("</li>"):
+            chunk += "</li>"
+        result.append(chunk)
+    return "\n".join(result)
 
 
 class ConfigDialog(Gtk.Dialog):
@@ -735,21 +864,29 @@ class Window(Gtk.Window):
 
         dialog = Gtk.Dialog(title="README", transient_for=self, flags=0)
         dialog.add_button(self.t("close"), Gtk.ResponseType.CLOSE)
-        dialog.set_default_size(720, 620)
+        dialog.set_default_size(760, 660)
 
         area = dialog.get_content_area()
-        area.set_border_width(8)
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_vexpand(True)
-        view = Gtk.TextView()
-        view.set_editable(False)
-        view.set_cursor_visible(False)
-        view.set_wrap_mode(Gtk.WrapMode.WORD)
-        view.set_left_margin(10)
-        view.set_right_margin(10)
-        view.get_buffer().set_text(text)
-        scrolled.add(view)
-        area.pack_start(scrolled, True, True, 0)
+        area.set_border_width(0)
+
+        if WebKit2 is not None:
+            view = WebKit2.WebView()
+            view.set_background_color(Gdk.RGBA(0.106, 0.106, 0.106, 1.0))
+            html_body = markdown_to_html(text)
+            html_text = f"<html><head><meta charset='utf-8'><style>{README_CSS}</style></head><body>{html_body}</body></html>"
+            base = "file://" + os.path.dirname(os.path.abspath(path)) + "/"
+            view.load_html(html_text, base)
+            area.pack_start(view, True, True, 0)
+        else:
+            scrolled = Gtk.ScrolledWindow()
+            scrolled.set_vexpand(True)
+            view = Gtk.TextView()
+            view.set_editable(False)
+            view.set_cursor_visible(False)
+            view.set_wrap_mode(Gtk.WrapMode.WORD)
+            view.get_buffer().set_text(text)
+            scrolled.add(view)
+            area.pack_start(scrolled, True, True, 0)
 
         dialog.show_all()
         dialog.run()

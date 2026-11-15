@@ -30,6 +30,9 @@ if [ ! -f "$CONFIG_DIR/aurorasteamer.conf" ]; then
 fi
 
 install -m 644 "$REPO_DIR/README.md" "$HOME/.local/share/doc/aurorasteamer/README.md"
+install -d "$HOME/.local/share/doc/aurorasteamer/assets"
+install -m 644 "$REPO_DIR"/assets/*.png "$HOME/.local/share/doc/aurorasteamer/assets/" 2>/dev/null || true
+install -m 644 "$REPO_DIR"/assets/*.svg "$HOME/.local/share/doc/aurorasteamer/assets/" 2>/dev/null || true
 install -m 644 "$REPO_DIR/assets/aurorasteamer.svg" "$HOME/.local/share/icons/hicolor/scalable/apps/aurorasteamer.svg"
 
 # PNG sizes for desktops and menus that do not read SVG icons.
