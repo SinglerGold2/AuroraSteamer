@@ -2,9 +2,9 @@
 Type=Application
 Name=Aurora exceptions
 Name[de]=Aurora-Ausnahmen
-Comment=Edit the AppIDs that must not start Aurora
-Comment[de]=AppIDs eintragen, die nicht mit Aurora starten sollen
-Exec=aurora-ignore-gui.sh
+Comment=Edit the Aurora path and the AppIDs that must not start Aurora
+Comment[de]=Aurora-Pfad und AppIDs eintragen, die nicht mit Aurora starten sollen
+Exec=aurora-ignore-gui.py
 Icon=preferences-system
 Terminal=false
 Categories=Utility;Settings;

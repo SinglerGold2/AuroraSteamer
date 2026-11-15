@@ -1,41 +1,33 @@
 # aurora-steam-watcher
 
 Starts [Aurora](https://www.cheathappens.com/) automatically inside the Proton
-prefix of the running Steam game, so trainers can attach to the game process.
+prefix of the running Steam game, so its trainers can attach to the game.
+
+There is a small window for the two settings that matter: the path to
+`Aurora.exe` and the list of AppIDs that should **not** start Aurora.
 
 ## Why this is needed
 
 Aurora is a Windows program. Proton gives every Steam game its own Wine prefix,
 and a process in one prefix cannot see processes in another. Started in its own
-prefix, Aurora simply lists no running game - without any error message.
+prefix, Aurora lists no running game - without any error message.
 
-The fix is to start Aurora inside the prefix of the game, with the Wine binary of
-the Proton version that runs the game. This script does exactly that, on every
-Proton game, unless the game is listed as an exception.
+This tool starts Aurora inside the prefix of the game, with the Wine binary of
+the Proton version that runs the game, on every Proton game unless the game is
+listed as an exception.
 
-## How it works
+## What you need
 
-1. Every `POLL_INTERVAL` seconds the script looks for a running Proton game.
-2. It reads `STEAM_COMPAT_APP_ID`, `STEAM_COMPAT_DATA_PATH` and
-   `STEAM_COMPAT_TOOL_PATHS` from the environment of that process.
-3. If the AppID is listed in the ignore file, nothing happens.
-4. Otherwise Aurora starts in that prefix, using the game's own Proton.
-5. When the game changes, the previous instance is stopped and a new one starts
-   in the new prefix.
-
-Native Linux games are not affected: they do not use Proton.
-
-## Requirements
-
-- `bash` and `systemd` (user services) - the watcher runs on any desktop, it only
-  needs the Steam client with Proton, not a specific desktop environment
-- `zenity` for the GUI window (GTK, available on GNOME, KDE, XFCE, Cinnamon,
-  Sway and others; shipped by most distributions)
-- `libnotify` for the save confirmation (optional, harmless if missing)
-
-The desktop entry follows the XDG specification, so it appears in the application
-menu of any desktop. On desktops that do not add `~/.local/bin` to `PATH`, use the
-full path in the entry.
+1. **Aurora installed**, for example in `~/Aurora/Aurora.exe`. It has to be a
+   copy on a Linux filesystem; running it straight from an NTFS drive works in
+   many cases but is slower and can fail on file permissions.
+2. **Steam with Proton**, and at least one Proton game installed. Native Linux
+   games are not affected by this tool.
+3. **A desktop with `bash` and `systemd` user services.** The tool does not
+   depend on a specific desktop environment.
+4. For the window: **Python 3 with GTK 3** (`python-gobject`, package names vary:
+   `python-gobject` on Arch, `python3-gi` on Debian/Ubuntu).
+5. Optional: **libnotify** for the save confirmation.
 
 ## Installation
 
@@ -45,61 +37,82 @@ cd aurora-steam-watcher
 ./install.sh
 ```
 
-`install.sh` copies the script to `~/.local/bin`, installs the systemd user unit,
-creates the ignore file if it does not exist yet and enables the service.
+The installer copies the script and the window to `~/.local/bin`, installs the
+systemd user unit, creates the config and exception files if they are missing,
+and enables the service.
 
-## Configuration
+## Using the window
 
-Copy the example and edit it:
+Start it from the application menu (**Aurora exceptions**) or with:
 
 ```bash
-cp aurora-steam-watcher.conf.example ~/.config/aurora-steam-watcher.conf
+aurora-ignore-gui.py
 ```
+
+The window has three parts:
+
+- **Path to Aurora.exe** - use *Durchsuchen...* if you are unsure where it is.
+- **AppIDs** - one AppID per line, for games that must not start Aurora.
+  Blank lines, spaces and duplicates are cleaned up when saving.
+- **Hilfe / README** - opens this file.
+
+Saving writes the config, writes the exception list and restarts the watcher, so
+changes apply immediately.
+
+The AppID is the number in a game's store URL, for example
+`https://store.steampowered.com/app/3321460/`.
+
+## How it works
+
+1. Every `POLL_INTERVAL` seconds the watcher looks for a running Proton game.
+2. It reads `STEAM_COMPAT_APP_ID`, `STEAM_COMPAT_DATA_PATH` and
+   `STEAM_COMPAT_TOOL_PATHS` from the environment of that process.
+3. If the AppID is in the exception list, nothing happens.
+4. Otherwise Aurora starts in that prefix, using the game's own Proton.
+5. When the game changes, the previous instance is stopped and a new one starts
+   in the new prefix.
+
+## Command line
+
+```bash
+aurora-steam-watch.sh --dry-run   # print what would happen, start nothing
+aurora-steam-watch.sh --once      # one check
+aurora-steam-watch.sh             # one check (same as --once)
+```
+
+## Configuration file
+
+`~/.config/aurora-steam-watcher.conf`, written by the window. Every setting is
+optional and commented in `aurora-steam-watcher.conf.example`:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `AURORA_EXE` | `$HOME/Aurora/Aurora.exe` | Path to Aurora.exe |
-| `IGNORE_FILE` | `$HOME/.config/aurora-ignore.txt` | File with one AppID per line |
+| `IGNORE_FILE` | `$HOME/.config/aurora-ignore.txt` | Exception list |
 | `POLL_INTERVAL` | `10` | Seconds between checks |
 | `START_DELAY` | `5` | Seconds to wait before Aurora starts |
 | `LOG_FILE` | `$HOME/.local/state/aurora-steam-watch.log` | Log file |
 | `STATE_FILE` | `$HOME/.local/state/aurora-steam-watch.state` | Remembers the running instance |
 
-## GUI for the exception list
-
-`aurora-ignore-gui.sh` opens a small window with the list: one AppID per line,
-save, done. Blank lines, spaces and duplicates are removed on save. The watcher
-reads the file on every check, so nothing has to be restarted.
-
-`install.sh` also installs a desktop entry called "Aurora exceptions".
-
-## Exceptions
-
-Add the AppID of a game that must not start Aurora, one per line:
+## Troubleshooting
 
 ```bash
-echo 3321460 >> ~/.config/aurora-ignore.txt
-```
-
-The AppID is the number in the game's store URL, for example
-`https://store.steampowered.com/app/3321460/`.
-
-The list is read on every check, so a restart is not needed.
-
-## Testing
-
-```bash
-aurora-steam-watch.sh --dry-run   # print what would happen, start nothing
 tail -f ~/.local/state/aurora-steam-watch.log
+systemctl --user status aurora-steam-watch.service
 ```
+
+- *No game detected*: the game must run through Proton, not natively.
+- *Aurora starts but lists nothing*: the game may use a different Wine prefix
+  than expected; check the log for the detected prefix.
+- *Aurora does not start*: check that `AURORA_EXE` exists and that the game's
+  Proton directory contains `files/bin/wine`.
 
 ## Limitations
 
-- Aurora needs a Proton game. Native Linux games are ignored by design.
 - Games with kernel anti-cheat may dislike any injected program. Add their AppID
-  to the ignore list.
-- The script starts Aurora once per game session; it does not stop Aurora when
-  the game exits. The next game start reuses or replaces the instance.
+  to the exception list.
+- Aurora is started once per game session and is not stopped when the game exits.
+  The next game start reuses or replaces the instance.
 - Tested with Aurora 3.5.x, Proton Experimental and GE-Proton on Arch-based
   distributions with KDE Plasma on Wayland.
 
