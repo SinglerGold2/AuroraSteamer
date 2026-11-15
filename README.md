@@ -25,6 +25,18 @@ Proton game, unless the game is listed as an exception.
 
 Native Linux games are not affected: they do not use Proton.
 
+## Requirements
+
+- `bash` and `systemd` (user services) - the watcher runs on any desktop, it only
+  needs the Steam client with Proton, not a specific desktop environment
+- `zenity` for the GUI window (GTK, available on GNOME, KDE, XFCE, Cinnamon,
+  Sway and others; shipped by most distributions)
+- `libnotify` for the save confirmation (optional, harmless if missing)
+
+The desktop entry follows the XDG specification, so it appears in the application
+menu of any desktop. On desktops that do not add `~/.local/bin` to `PATH`, use the
+full path in the entry.
+
 ## Installation
 
 ```bash
