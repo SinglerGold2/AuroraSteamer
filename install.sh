@@ -12,7 +12,9 @@ mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local
 
 install -m 755 "$REPO_DIR/aurorasteamer.sh" "$BIN_DIR/aurorasteamer.sh"
 install -m 755 "$REPO_DIR/aurorasteamer-gui.py" "$BIN_DIR/aurorasteamer-gui.py"
-install -m 644 "$REPO_DIR/aurorasteamer.desktop" "$HOME/.local/share/applications/aurorasteamer.desktop"
+sed "s|@EXEC@|$BIN_DIR/aurorasteamer-gui.py|" "$REPO_DIR/aurorasteamer.desktop" \
+    > "$HOME/.local/share/applications/aurorasteamer.desktop"
+chmod 644 "$HOME/.local/share/applications/aurorasteamer.desktop"
 install -m 644 "$REPO_DIR/aurorasteamer.service" "$UNIT_DIR/aurorasteamer.service"
 
 if [ ! -f "$CONFIG_DIR/aurora-ignore.txt" ]; then
