@@ -8,7 +8,7 @@ BIN_DIR="$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config"
 UNIT_DIR="$CONFIG_DIR/systemd/user"
 
-mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local/share/applications" "$HOME/.local/share/doc/aurora-steam-watcher"
+mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local/share/applications" "$HOME/.local/share/doc/aurora-steam-watcher" "$HOME/.local/share/icons/hicolor/scalable/apps"
 
 install -m 755 "$REPO_DIR/aurora-steam-watch.sh" "$BIN_DIR/aurora-steam-watch.sh"
 install -m 755 "$REPO_DIR/aurora-ignore-gui.py" "$BIN_DIR/aurora-ignore-gui.py"
@@ -26,6 +26,8 @@ if [ ! -f "$CONFIG_DIR/aurora-steam-watcher.conf" ]; then
 fi
 
 install -m 644 "$REPO_DIR/README.md" "$HOME/.local/share/doc/aurora-steam-watcher/README.md"
+install -m 644 "$REPO_DIR/assets/aurora-exceptions.svg" "$HOME/.local/share/icons/hicolor/scalable/apps/aurora-exceptions.svg"
+gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
 systemctl --user daemon-reload
 systemctl --user enable --now aurora-steam-watch.service
