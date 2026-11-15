@@ -12,7 +12,7 @@ There is a small window for the two settings that matter: the path to
 
 | German | English |
 | --- | --- |
-| ![Window in German](assets/screenshot-de.png) | ![Window in English](assets/screenshot-en.png) |
+| ![Window in German](assets/aurorasteamer-window-de.png) | ![Window in English](assets/aurorasteamer-window-en.png) |
 
 ## Why this is needed
 
