@@ -78,6 +78,11 @@ The window has three parts:
   `steamapps/libraryfolders.vdf` and the `appmanifest_*.acf` files, so all
   libraries count, no matter which drive they are on. Manually added AppIDs stay
   in the list.
+
+  Entries are **not** removed when a game is uninstalled. That is intentional: if
+  you install the game again later, the exception is still there and Aurora stays
+  out of it without any further action. Uninstalled games simply disappear from
+  the picker, not from the list.
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so

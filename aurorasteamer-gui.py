@@ -564,7 +564,12 @@ class Window(Gtk.Window):
         self.apply_game_selection(chosen, {appid for appid, _name in dialog.games})
 
     def apply_game_selection(self, chosen, installed_ids):
-        """Replaces the installed games in the list, keeps manual entries."""
+        """Replaces the installed games in the list, keeps manual entries.
+
+        Entries for games that are no longer installed are kept on purpose: when
+        the game comes back, the exception is still there and Aurora stays out of
+        it without the user having to think about it again.
+        """
         keep = [row.appid for row in self.rows if row.appid not in installed_ids]
         wanted = keep + sorted(set(chosen) - set(keep))
         for row in list(self.rows):
