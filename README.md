@@ -1,10 +1,18 @@
 # AuroraSteamer
 
+<img src="assets/icon-256.png" alt="AuroraSteamer icon" width="96" align="right">
+
 Starts [Aurora](https://www.cheathappens.com/) automatically inside the Proton
 prefix of the running Steam game, so its trainers can attach to the game.
 
 There is a small window for the two settings that matter: the path to
 `Aurora.exe` and the list of AppIDs that should **not** start Aurora.
+
+## Screenshots
+
+| German | English |
+| --- | --- |
+| ![Window in German](assets/screenshot-de.png) | ![Window in English](assets/screenshot-en.png) |
 
 ## Why this is needed
 
