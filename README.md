@@ -72,6 +72,12 @@ The window has three parts:
   not exist in the store is marked as *not found*, a failed lookup as *unknown*;
   the *Refresh names* button tries the unknown ones again. Nothing breaks
   without a network connection.
+- **Installierte Spiele...** / **Installed games...** - opens the list of every
+  game installed in your Steam libraries. Tick the games that must not start
+  Aurora, press *Übernehmen* / *Apply*, done. The list is read from
+  `steamapps/libraryfolders.vdf` and the `appmanifest_*.acf` files, so all
+  libraries count, no matter which drive they are on. Manually added AppIDs stay
+  in the list.
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so

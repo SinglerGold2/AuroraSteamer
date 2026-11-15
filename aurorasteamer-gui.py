@@ -50,6 +50,12 @@ TEXTS = {
         "unknown": "unbekannt",
         "notfound": "kein Treffer",
         "refresh": "Namen aktualisieren",
+        "games": "Installierte Spiele...",
+        "games_title": "Installierte Steam-Spiele",
+        "games_hint": "Angehakte Spiele starten Aurora nicht.",
+        "games_search": "Suchen",
+        "apply": "Übernehmen",
+        "cancel": "Abbrechen",
         "loading": "wird geladen...",
         "invalid": "Bitte eine Zahl eingeben.",
         "duplicate": "Diese AppID steht schon in der Liste.",
@@ -75,6 +81,12 @@ TEXTS = {
         "unknown": "unknown",
         "notfound": "not found",
         "refresh": "Refresh names",
+        "games": "Installed games...",
+        "games_title": "Installed Steam games",
+        "games_hint": "Checked games do not start Aurora.",
+        "games_search": "Search",
+        "apply": "Apply",
+        "cancel": "Cancel",
         "loading": "loading...",
         "invalid": "Please enter a number.",
         "duplicate": "This AppID is already in the list.",
@@ -161,6 +173,68 @@ def save_cache(cache):
         json.dump(cache, handle, ensure_ascii=False, indent=1, sort_keys=True)
 
 
+STEAM_ROOT = os.path.expanduser("~/.local/share/Steam")
+SKIP_APPIDS = {
+    "228980",   # Steamworks Common Redistributables
+    "1070560",  # Steam Linux Runtime 1.0
+    "1391110",  # Steam Linux Runtime 2.0
+    "1628350",  # Steam Linux Runtime 3.0
+    "4183110",  # Steam Linux Runtime 4.0
+    "1493710",  # Proton Experimental
+}
+
+
+def steam_libraries():
+    """Returns the Steam library folders that contain a steamapps directory."""
+    libraries = []
+    main = os.path.join(STEAM_ROOT, "steamapps")
+    if os.path.isdir(main):
+        libraries.append(os.path.dirname(main))
+
+    vdf = os.path.join(main, "libraryfolders.vdf")
+    if os.path.exists(vdf):
+        with open(vdf, encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                line = line.strip()
+                if line.startswith('"path"'):
+                    parts = line.split('"')
+                    if len(parts) >= 4 and os.path.isdir(parts[3]):
+                        libraries.append(parts[3])
+    return list(dict.fromkeys(libraries))
+
+
+def installed_games():
+    """Returns [(appid, name)] for the games installed in all libraries."""
+    games = []
+    for library in steam_libraries():
+        steamapps = os.path.join(library, "steamapps")
+        if not os.path.isdir(steamapps):
+            continue
+        for entry in sorted(os.listdir(steamapps)):
+            if not (entry.startswith("appmanifest_") and entry.endswith(".acf")):
+                continue
+            appid = entry[len("appmanifest_"):-len(".acf")]
+            name = ""
+            try:
+                with open(os.path.join(steamapps, entry), encoding="utf-8", errors="replace") as handle:
+                    for line in handle:
+                        line = line.strip()
+                        if line.startswith('"name"'):
+                            name = line.split('"')[3]
+                            break
+            except OSError:
+                continue
+            if not name or appid in SKIP_APPIDS:
+                continue
+            if "Proton" in name or "Steam Linux Runtime" in name or "Steamworks Common" in name:
+                continue
+            games.append((appid, name))
+    unique = {}
+    for appid, name in games:
+        unique.setdefault(appid, name)
+    return sorted(unique.items(), key=lambda item: item[1].lower())
+
+
 def fetch_name(appid):
     """Asks the Steam store for the name of an AppID. Returns None on failure."""
     url = (
@@ -212,6 +286,73 @@ class Row:
             self.name_label.set_text(self.window_ref.t("unknown"))
         else:
             self.name_label.set_text(self.window_ref.t("notfound"))
+
+
+class GamesDialog(Gtk.Dialog):
+    """Shows the installed Steam games with a checkbox for the exception list."""
+
+    def __init__(self, window, selected):
+        super().__init__(title=window.t("games_title"), transient_for=window, flags=0)
+        self.window_ref = window
+        self.selected = set(selected)
+        self.buttons = []
+
+        self.add_button(window.t("cancel"), Gtk.ResponseType.CANCEL)
+        self.add_button(window.t("apply"), Gtk.ResponseType.OK)
+        self.set_default_size(520, 620)
+
+        area = self.get_content_area()
+        area.set_spacing(8)
+        area.set_border_width(10)
+
+        hint = Gtk.Label(label=window.t("games_hint"), xalign=0)
+        area.pack_start(hint, False, False, 0)
+
+        self.search = Gtk.SearchEntry()
+        self.search.set_placeholder_text(window.t("games_search"))
+        self.search.connect("search-changed", self.on_search)
+        area.pack_start(self.search, False, False, 0)
+
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        self.listbox = Gtk.ListBox()
+        self.listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+        scrolled.add(self.listbox)
+        area.pack_start(scrolled, True, True, 0)
+
+        self.games = installed_games()
+        if not self.games:
+            empty = Gtk.Label(label=window.t("notfound"), xalign=0)
+            self.listbox.add(empty)
+        for appid, name in self.games:
+            check = Gtk.CheckButton()
+            check.set_active(appid in self.selected)
+            check.connect("toggled", self.on_toggled, appid)
+            label = Gtk.Label(label=f"{name}  ({appid})", xalign=0)
+            label.set_ellipsize(Pango.EllipsizeMode.END)
+            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+            box.pack_start(check, False, False, 0)
+            box.pack_start(label, True, True, 0)
+            row = Gtk.ListBoxRow()
+            row.add(box)
+            row.filter_text = f"{name} {appid}".lower()
+            row.show_all()
+            self.listbox.add(row)
+            self.buttons.append(check)
+
+        self.show_all()
+
+    def on_search(self, entry):
+        needle = entry.get_text().lower()
+        for row in self.listbox.get_children():
+            if hasattr(row, "filter_text"):
+                row.set_visible(needle in row.filter_text)
+
+    def on_toggled(self, check, appid):
+        if check.get_active():
+            self.selected.add(appid)
+        else:
+            self.selected.discard(appid)
 
 
 class Window(Gtk.Window):
@@ -271,8 +412,14 @@ class Window(Gtk.Window):
         outer.pack_start(exe_row, False, False, 0)
 
         # AppID list
+        ids_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         self.ids_label = Gtk.Label(xalign=0)
-        outer.pack_start(self.ids_label, False, False, 0)
+        self.ids_label.set_hexpand(True)
+        ids_row.pack_start(self.ids_label, True, True, 0)
+        self.games_button = Gtk.Button()
+        self.games_button.connect("clicked", self.on_games)
+        ids_row.pack_end(self.games_button, False, False, 0)
+        outer.pack_start(ids_row, False, False, 0)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_hexpand(True)
@@ -286,6 +433,7 @@ class Window(Gtk.Window):
         self.add_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.add_entry = Gtk.Entry()
         self.add_entry.set_hexpand(True)
+        self.add_entry.set_width_chars(14)
         self.add_entry.connect("activate", self.on_add)
         self.add_box.pack_start(self.add_entry, True, True, 0)
         self.add_button = Gtk.Button()
@@ -294,6 +442,7 @@ class Window(Gtk.Window):
         self.refresh_button = Gtk.Button()
         self.refresh_button.connect("clicked", self.on_refresh)
         self.add_box.pack_start(self.refresh_button, False, False, 0)
+
         outer.pack_start(self.add_box, False, False, 0)
 
         # Message line for validation feedback
@@ -333,6 +482,7 @@ class Window(Gtk.Window):
         self.add_entry.set_placeholder_text(self.t("add_placeholder"))
         self.add_button.set_label(self.t("add"))
         self.refresh_button.set_label(self.t("refresh"))
+        self.games_button.set_label(self.t("games"))
         self.help_button.set_label(self.t("help"))
         self.close_button.set_label(self.t("close"))
         self.save_button.set_label(self.t("save"))
@@ -402,6 +552,27 @@ class Window(Gtk.Window):
             return
         self.add_row(text, self.cache.get(text))
         self.add_entry.set_text("")
+
+    def on_games(self, _button):
+        current = {row.appid for row in self.rows}
+        dialog = GamesDialog(self, current)
+        response = dialog.run()
+        chosen = set(dialog.selected)
+        dialog.destroy()
+        if response != Gtk.ResponseType.OK:
+            return
+        self.apply_game_selection(chosen, {appid for appid, _name in dialog.games})
+
+    def apply_game_selection(self, chosen, installed_ids):
+        """Replaces the installed games in the list, keeps manual entries."""
+        keep = [row.appid for row in self.rows if row.appid not in installed_ids]
+        wanted = keep + sorted(set(chosen) - set(keep))
+        for row in list(self.rows):
+            self.on_remove_row(None, row)
+        for appid in wanted:
+            self.add_row(appid, self.cache.get(appid))
+        self.message.set_text(self.t("saved").format(count=len(wanted)))
+        return wanted
 
     def on_refresh(self, _button):
         self.message.set_text("")
