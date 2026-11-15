@@ -28,6 +28,8 @@ listed as an exception.
 4. For the window: **Python 3 with GTK 3** (`python-gobject`, package names vary:
    `python-gobject` on Arch, `python3-gi` on Debian/Ubuntu).
 5. Optional: **libnotify** for the save confirmation.
+6. Network access for the game names (Steam store API, no key required). The
+   tool works without it; only the names stay empty.
 
 ## Installation
 
@@ -56,8 +58,10 @@ choice is stored in the configuration file.
 The window has three parts:
 
 - **Path to Aurora.exe** - use *Durchsuchen...* if you are unsure where it is.
-- **AppIDs** - one AppID per line, for games that must not start Aurora.
-  Blank lines, spaces and duplicates are cleaned up when saving.
+- **AppIDs** - add an AppID and the window asks the Steam store for the game
+  name and shows it next to the number, so you can see what you excluded.
+  Names are cached in `~/.cache/aurorasteamer/names.json`; without a network
+  connection the ID is shown as unknown, nothing breaks.
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so
