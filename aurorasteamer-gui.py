@@ -715,9 +715,13 @@ class Window(Gtk.Window):
         path = DOCS
         if not os.path.exists(path):
             path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "README.md")
-        if os.path.exists(path):
-            subprocess.Popen(["xdg-open", path])
-        else:
+        try:
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
+        except OSError:
+            text = None
+
+        if text is None:
             dialog = Gtk.MessageDialog(
                 transient_for=self,
                 flags=0,
@@ -727,6 +731,29 @@ class Window(Gtk.Window):
             )
             dialog.run()
             dialog.destroy()
+            return
+
+        dialog = Gtk.Dialog(title="README", transient_for=self, flags=0)
+        dialog.add_button(self.t("close"), Gtk.ResponseType.CLOSE)
+        dialog.set_default_size(720, 620)
+
+        area = dialog.get_content_area()
+        area.set_border_width(8)
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_vexpand(True)
+        view = Gtk.TextView()
+        view.set_editable(False)
+        view.set_cursor_visible(False)
+        view.set_wrap_mode(Gtk.WrapMode.WORD)
+        view.set_left_margin(10)
+        view.set_right_margin(10)
+        view.get_buffer().set_text(text)
+        scrolled.add(view)
+        area.pack_start(scrolled, True, True, 0)
+
+        dialog.show_all()
+        dialog.run()
+        dialog.destroy()
 
 
 def main():

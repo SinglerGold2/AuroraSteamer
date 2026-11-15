@@ -95,7 +95,7 @@ The window has three parts:
 - **Config** - opens the settings dialog: poll interval and start delay in
   seconds. Both are written to `~/.config/aurorasteamer.conf`, the file is shown
   in the dialog.
-- **Hilfe / README** - opens this file.
+- **Hilfe / README** - shows this file in a window, no external editor needed.
 
 Saving writes the config, writes the exception list and restarts the watcher, so
 changes apply immediately. The window stays open after saving; close it with the
