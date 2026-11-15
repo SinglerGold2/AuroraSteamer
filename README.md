@@ -10,19 +10,15 @@ There is a small window for the two settings that matter: the path to
 
 ## Screenshots
 
-| German | English |
-| --- | --- |
-| ![Window in German](assets/aurorasteamer-window-de-v5.png) | ![Window in English](assets/aurorasteamer-window-en-v5.png) |
+![The window](assets/aurorasteamer-window.png)
 
 The settings dialog holds the two timing values the watcher uses:
 
-![Settings dialog](assets/aurorasteamer-config-de.png)
+![Settings dialog](assets/aurorasteamer-config.png)
 
 The game picker, with the AppIDs taken from the Steam manifests:
 
-| German | English |
-| --- | --- |
-| ![Game picker in German](assets/aurorasteamer-games-de.png) | ![Game picker in English](assets/aurorasteamer-games-en.png) |
+![The game picker](assets/aurorasteamer-games.png)
 
 ## Why this is needed
 
