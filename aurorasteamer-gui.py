@@ -442,9 +442,6 @@ class Window(Gtk.Window):
 
         # Watcher switch
         watcher_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        self.watcher_label = Gtk.Label(xalign=0)
-        self.watcher_label.set_hexpand(True)
-        watcher_row.pack_start(self.watcher_label, True, True, 0)
         self.watcher_button = Gtk.ToggleButton()
         self.watcher_button.set_active(service_active())
         apply_watcher_style(self.watcher_button, self.watcher_button.get_active())
@@ -542,7 +539,6 @@ class Window(Gtk.Window):
         self.set_title(self.t("title"))
         self.language_label.set_text(self.t("language") + ":")
         self.language_button.set_label("Deutsch" if self.language == "de" else "English")
-        self.watcher_label.set_text(self.t("watcher"))
         self.set_watcher_button(self.watcher_button.get_active())
         self.subtitle.set_text(self.t("subtitle"))
         self.path_label.set_text(self.t("path"))

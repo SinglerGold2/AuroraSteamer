@@ -12,7 +12,7 @@ There is a small window for the two settings that matter: the path to
 
 | German | English |
 | --- | --- |
-| ![Window in German](assets/aurorasteamer-window-de-v3.png) | ![Window in English](assets/aurorasteamer-window-en-v3.png) |
+| ![Window in German](assets/aurorasteamer-window-de-v4.png) | ![Window in English](assets/aurorasteamer-window-en-v4.png) |
 
 The game picker, with the AppIDs taken from the Steam manifests:
 
