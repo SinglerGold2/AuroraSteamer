@@ -31,6 +31,17 @@ fi
 
 install -m 644 "$REPO_DIR/README.md" "$HOME/.local/share/doc/aurorasteamer/README.md"
 install -m 644 "$REPO_DIR/assets/aurorasteamer.svg" "$HOME/.local/share/icons/hicolor/scalable/apps/aurorasteamer.svg"
+
+# PNG sizes for desktops and menus that do not read SVG icons.
+if command -v magick >/dev/null 2>&1 || command -v convert >/dev/null 2>&1; then
+    TOOL="$(command -v magick || command -v convert)"
+    for size in 48 64 128 256; do
+        mkdir -p "$HOME/.local/share/icons/hicolor/${size}x${size}/apps"
+        "$TOOL" -background none "$REPO_DIR/assets/aurorasteamer.svg" \
+            -resize "${size}x${size}" \
+            "$HOME/.local/share/icons/hicolor/${size}x${size}/apps/aurorasteamer.png" 2>/dev/null || true
+    done
+fi
 gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
 systemctl --user daemon-reload
