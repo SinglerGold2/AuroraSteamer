@@ -16,6 +16,8 @@ sed "s|@EXEC@|$BIN_DIR/aurorasteamer-gui.py|" "$REPO_DIR/aurorasteamer.desktop" 
     > "$HOME/.local/share/applications/aurorasteamer.desktop"
 chmod 644 "$HOME/.local/share/applications/aurorasteamer.desktop"
 install -m 644 "$REPO_DIR/aurorasteamer.service" "$UNIT_DIR/aurorasteamer.service"
+install -d "$HOME/.local/share/aurorasteamer/locale"
+install -m 644 "$REPO_DIR"/locale/*.json "$HOME/.local/share/aurorasteamer/locale/"
 
 if [ ! -f "$CONFIG_DIR/aurora-ignore.txt" ]; then
     install -m 644 "$REPO_DIR/aurora-ignore.txt.example" "$CONFIG_DIR/aurora-ignore.txt"

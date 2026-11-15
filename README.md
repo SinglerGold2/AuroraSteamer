@@ -12,7 +12,11 @@ There is a small window for the two settings that matter: the path to
 
 | German | English |
 | --- | --- |
-| ![Window in German](assets/aurorasteamer-window-de-v4.png) | ![Window in English](assets/aurorasteamer-window-en-v4.png) |
+| ![Window in German](assets/aurorasteamer-window-de-v5.png) | ![Window in English](assets/aurorasteamer-window-en-v5.png) |
+
+The settings dialog holds the two timing values the watcher uses:
+
+![Settings dialog](assets/aurorasteamer-config-de.png)
 
 The game picker, with the AppIDs taken from the Steam manifests:
 
@@ -92,6 +96,9 @@ The window has three parts:
 - **AuroraSteamer-Wächter: an / aus** - switches the watcher service on or off;
   the button is green while it runs and red while it is off. Off means Aurora is
   not started automatically; the exception list stays as it is.
+- **Config** - opens the settings dialog: poll interval and start delay in
+  seconds. Both are written to `~/.config/aurorasteamer.conf`, the file is shown
+  in the dialog.
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so
@@ -113,6 +120,21 @@ right-click the game, *Properties*, *Updates* - the App-ID is shown at the botto
 4. Otherwise Aurora starts in that prefix, using the game's own Proton.
 5. When the game changes, the previous instance is stopped and a new one starts
    in the new prefix.
+
+## Translations
+
+The window reads its texts from `locale/*.json`, next to the installed program in
+`~/.local/share/aurorasteamer/locale`. The language picker lists whatever files
+are there, so adding `fr.json` adds French to the menu - no code change needed:
+
+```json
+{
+  "name": "Français",
+  "texts": { "title": "AuroraSteamer", "save": "Enregistrer", "...": "..." }
+}
+```
+
+Missing keys fall back to English.
 
 ## Command line
 

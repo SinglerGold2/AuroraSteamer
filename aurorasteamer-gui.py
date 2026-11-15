@@ -34,81 +34,45 @@ IGNORE_HEADER = (
     "# One AppID per line. Lines starting with # are comments.\n"
 )
 
-TEXTS = {
-    "de": {
-        "title": "AuroraSteamer",
-        "subtitle": "Startet Aurora automatisch mit jedem Steam-Spiel.\n"
-                    "Spiele, die es nicht sollen, hier eintragen.",
-        "language": "Sprache",
-        "watcher": "AuroraSteamer-Wächter",
-        "watcher_state_on": "AuroraSteamer-Wächter: an",
-        "watcher_state_off": "AuroraSteamer-Wächter: aus",
-        "watcher_on": "Aurora startet automatisch mit jedem Steam-Spiel",
-        "watcher_off": "Aurora startet nicht automatisch",
-        "path": "Pfad zu Aurora.exe",
-        "browse": "Durchsuchen...",
-        "browse_title": "Aurora.exe auswählen",
-        "filter": "Windows-Programme (*.exe)",
-        "ids": "AppIDs, die NICHT mit Aurora starten sollen:",
-        "add_placeholder": "AppID eingeben, z. B. 2344520",
-        "add": "Hinzufügen",
-        "remove": "Entfernen",
-        "unknown": "unbekannt",
-        "notfound": "kein Treffer",
-        "refresh": "Namen aktualisieren",
-        "games": "Installierte Spiele...",
-        "games_title": "Installierte Steam-Spiele",
-        "games_hint": "Angehakte Spiele starten Aurora nicht.",
-        "games_search": "Suchen",
-        "apply": "Übernehmen",
-        "cancel": "Abbrechen",
-        "loading": "wird geladen...",
-        "invalid": "Bitte eine Zahl eingeben.",
-        "duplicate": "Diese AppID steht schon in der Liste.",
-        "help": "Hilfe / README",
-        "close": "Schließen",
-        "save": "Speichern",
-        "saved": "Gespeichert, {count} Einträge in der Liste.",
-        "missing_readme": "Die README wurde nicht gefunden. Bitte das Projekt neu installieren.",
-    },
-    "en": {
-        "title": "AuroraSteamer",
-        "subtitle": "Starts Aurora automatically with every Steam game.\n"
-                    "Games that should not be started with it go below.",
-        "language": "Language",
-        "watcher": "AuroraSteamer watcher",
-        "watcher_state_on": "AuroraSteamer watcher: on",
-        "watcher_state_off": "AuroraSteamer watcher: off",
-        "watcher_on": "Aurora starts automatically with every Steam game",
-        "watcher_off": "Aurora does not start automatically",
-        "path": "Path to Aurora.exe",
-        "browse": "Browse...",
-        "browse_title": "Select Aurora.exe",
-        "filter": "Windows programs (*.exe)",
-        "ids": "AppIDs that must NOT start Aurora:",
-        "add_placeholder": "AppID, e.g. 2344520",
-        "add": "Add",
-        "remove": "Remove",
-        "unknown": "unknown",
-        "notfound": "not found",
-        "refresh": "Refresh names",
-        "games": "Installed games...",
-        "games_title": "Installed Steam games",
-        "games_hint": "Checked games do not start Aurora.",
-        "games_search": "Search",
-        "apply": "Apply",
-        "cancel": "Cancel",
-        "loading": "loading...",
-        "invalid": "Please enter a number.",
-        "duplicate": "This AppID is already in the list.",
-        "help": "Help / README",
-        "close": "Close",
-        "save": "Save",
-        "saved": "Saved, {count} entries in the list.",
-        "missing_readme": "README not found. Please reinstall the project.",
-    },
-}
 
+
+
+LOCALE_DIRS = [
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "locale"),
+    os.path.expanduser("~/.local/share/aurorasteamer/locale"),
+    "/usr/share/aurorasteamer/locale",
+]
+
+
+def locale_dir():
+    for folder in LOCALE_DIRS:
+        if os.path.isdir(folder):
+            return folder
+    return None
+
+
+def load_locales():
+    """Reads every *.json from the locale folder: {code: {"name":…, "texts":{…}}}."""
+    locales = {}
+    folder = locale_dir()
+    if not folder:
+        return locales
+    for entry in sorted(os.listdir(folder)):
+        if not entry.endswith(".json"):
+            continue
+        code = entry[:-len(".json")]
+        try:
+            with open(os.path.join(folder, entry), encoding="utf-8") as handle:
+                data = json.load(handle)
+        except (OSError, ValueError):
+            continue
+        if isinstance(data, dict) and isinstance(data.get("texts"), dict):
+            data.setdefault("name", code)
+            locales[code] = data
+    return locales
+
+
+TEXTS = {}
 
 def system_language():
     for variable in ("LC_ALL", "LC_MESSAGES", "LANG"):
@@ -335,6 +299,46 @@ def service_active():
     return result.stdout.strip() == "active"
 
 
+class ConfigDialog(Gtk.Dialog):
+    """Edits the two timing values of the watcher."""
+
+    def __init__(self, window):
+        super().__init__(title=window.t("config_title"), transient_for=window, flags=0)
+        self.window_ref = window
+        self.add_button(window.t("cancel"), Gtk.ResponseType.CANCEL)
+        self.add_button(window.t("save"), Gtk.ResponseType.OK)
+        self.set_default_size(460, 260)
+
+        area = self.get_content_area()
+        area.set_spacing(10)
+        area.set_border_width(12)
+
+        path_label = Gtk.Label(label=f'{window.t("config_file")}: {CONFIG}', xalign=0)
+        path_label.set_selectable(True)
+        path_label.set_line_wrap(True)
+        area.pack_start(path_label, False, False, 0)
+
+        grid = Gtk.Grid(row_spacing=10, column_spacing=12)
+        area.pack_start(grid, False, False, 0)
+
+        poll_label = Gtk.Label(label=window.t("poll_interval"), xalign=0)
+        self.poll_spin = Gtk.SpinButton.new_with_range(1, 3600, 1)
+        self.poll_spin.set_value(int(read_config_value("POLL_INTERVAL", "10") or 10))
+        grid.attach(poll_label, 0, 0, 1, 1)
+        grid.attach(self.poll_spin, 1, 0, 1, 1)
+
+        delay_label = Gtk.Label(label=window.t("start_delay"), xalign=0)
+        self.delay_spin = Gtk.SpinButton.new_with_range(0, 300, 1)
+        self.delay_spin.set_value(int(read_config_value("START_DELAY", "5") or 5))
+        grid.attach(delay_label, 0, 1, 1, 1)
+        grid.attach(self.delay_spin, 1, 1, 1, 1)
+
+        self.show_all()
+
+    def values(self):
+        return int(self.poll_spin.get_value()), int(self.delay_spin.get_value())
+
+
 class GamesDialog(Gtk.Dialog):
     """Shows the installed Steam games with a checkbox for the exception list."""
 
@@ -405,9 +409,10 @@ class GamesDialog(Gtk.Dialog):
 class Window(Gtk.Window):
     def __init__(self):
         super().__init__(title="AuroraSteamer")
-        self.language = read_config_value("LANGUAGE", system_language())
-        if self.language not in TEXTS:
-            self.language = system_language()
+        self.locales = load_locales()
+        self.language = read_config_value("LANGUAGE", "") or system_language()
+        if self.language not in self.locales:
+            self.language = system_language() if system_language() in self.locales else next(iter(self.locales), "en")
         self.cache = load_cache()
         self.rows = []
         self.loading = True
@@ -430,8 +435,8 @@ class Window(Gtk.Window):
         popover = Gtk.Popover()
         popover_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
         popover_box.set_border_width(4)
-        for code, label in (("de", "Deutsch"), ("en", "English")):
-            button = Gtk.ModelButton(label=label)
+        for code, data in sorted(self.locales.items(), key=lambda item: item[1]["name"].lower()):
+            button = Gtk.ModelButton(label=data["name"])
             button.connect("clicked", self.on_language_selected, code)
             popover_box.pack_start(button, False, False, 0)
         popover_box.show_all()
@@ -513,6 +518,9 @@ class Window(Gtk.Window):
         self.help_button = Gtk.Button()
         self.help_button.connect("clicked", lambda _button: self.open_readme())
         buttons.pack_start(self.help_button, False, False, 0)
+        self.config_button = Gtk.Button()
+        self.config_button.connect("clicked", self.on_config)
+        buttons.pack_start(self.config_button, False, False, 0)
         self.close_button = Gtk.Button()
         self.close_button.connect("clicked", lambda _button: self.destroy())
         buttons.pack_end(self.close_button, False, False, 0)
@@ -533,12 +541,16 @@ class Window(Gtk.Window):
         return False
 
     def t(self, key):
-        return TEXTS[self.language][key]
+        texts = self.locales.get(self.language, {}).get("texts", {})
+        if key in texts:
+            return texts[key]
+        fallback = self.locales.get("en", {}).get("texts", {})
+        return fallback.get(key, key)
 
     def apply_language(self):
         self.set_title(self.t("title"))
         self.language_label.set_text(self.t("language") + ":")
-        self.language_button.set_label("Deutsch" if self.language == "de" else "English")
+        self.language_button.set_label(self.locales.get(self.language, {}).get("name", self.language))
         self.set_watcher_button(self.watcher_button.get_active())
         self.subtitle.set_text(self.t("subtitle"))
         self.path_label.set_text(self.t("path"))
@@ -549,6 +561,7 @@ class Window(Gtk.Window):
         self.refresh_button.set_label(self.t("refresh"))
         self.games_button.set_label(self.t("games"))
         self.help_button.set_label(self.t("help"))
+        self.config_button.set_label(self.t("config"))
         self.close_button.set_label(self.t("close"))
         self.save_button.set_label(self.t("save"))
         for row in self.rows:
@@ -572,7 +585,7 @@ class Window(Gtk.Window):
         self.message.set_text(self.t("watcher_on") if active else self.t("watcher_off"))
 
     def on_language_selected(self, _button, language):
-        if language in TEXTS:
+        if language in self.locales:
             self.language = language
             self.apply_language()
         self.language_button.get_popover().hide()
@@ -632,6 +645,18 @@ class Window(Gtk.Window):
             return
         self.add_row(text, self.cache.get(text))
         self.add_entry.set_text("")
+
+    def on_config(self, _button):
+        dialog = ConfigDialog(self)
+        response = dialog.run()
+        poll_interval, start_delay = dialog.values()
+        dialog.destroy()
+        if response != Gtk.ResponseType.OK:
+            return
+        write_config_value("POLL_INTERVAL", poll_interval)
+        write_config_value("START_DELAY", start_delay)
+        subprocess.run(["systemctl", "--user", "restart", SERVICE], check=False)
+        self.message.set_text(f'{self.t("poll_interval")}: {poll_interval}, {self.t("start_delay")}: {start_delay}')
 
     def on_games(self, _button):
         current = {row.appid for row in self.rows}
