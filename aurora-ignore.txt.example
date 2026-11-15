@@ -1,0 +1,5 @@
+# Steam AppIDs that must not start Aurora, one per line.
+# Lines starting with # are comments. Everything else is ignored.
+#
+# Example:
+# 3321460

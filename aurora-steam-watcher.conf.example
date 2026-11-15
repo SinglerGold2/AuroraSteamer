@@ -1,0 +1,18 @@
+# Copy this file to ~/.config/aurora-steam-watcher.conf and adjust the values.
+# Every setting is optional; the defaults are shown here.
+
+# Path to Aurora.exe
+AURORA_EXE="$HOME/Aurora/Aurora.exe"
+
+# File with one Steam AppID per line. Listed games do not start Aurora.
+IGNORE_FILE="$HOME/.config/aurora-ignore.txt"
+
+# How often to look for a running game, in seconds.
+POLL_INTERVAL=10
+
+# Seconds to wait after the game was detected before Aurora starts.
+START_DELAY=5
+
+# Log file and state file.
+LOG_FILE="$HOME/.local/state/aurora-steam-watch.log"
+STATE_FILE="$HOME/.local/state/aurora-steam-watch.state"

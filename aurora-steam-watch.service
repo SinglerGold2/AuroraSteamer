@@ -1,0 +1,14 @@
+[Unit]
+Description=Starts Aurora inside the Proton prefix of the running Steam game
+Documentation=https://github.com/SinglerGold2/aurora-steam-watcher
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/aurora-steam-watch.sh --loop
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target
