@@ -10,6 +10,9 @@ IGNORE_FILE="$HOME/.config/aurora-ignore.txt"
 # How often to look for a running game, in seconds.
 POLL_INTERVAL=10
 
+# Slower interval while no game is running, in seconds.
+POLL_IDLE_INTERVAL=30
+
 # Seconds to wait after the game was detected before Aurora starts.
 START_DELAY=5
 

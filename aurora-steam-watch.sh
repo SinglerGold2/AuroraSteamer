@@ -27,6 +27,10 @@ IGNORE_FILE="${IGNORE_FILE:-$HOME/.config/aurora-ignore.txt}"
 # How often the loop looks for a running game, in seconds.
 POLL_INTERVAL="${POLL_INTERVAL:-10}"
 
+# Slower interval while no game is running. A check costs about 40 ms, so a
+# longer idle interval keeps the service close to idle too.
+POLL_IDLE_INTERVAL="${POLL_IDLE_INTERVAL:-30}"
+
 # Seconds to wait before starting Aurora after the game was detected.
 START_DELAY="${START_DELAY:-5}"
 
@@ -62,10 +66,15 @@ find_game_pid() {
     pgrep -f "SteamLaunch AppId=" 2>/dev/null | tail -1
 }
 
-# Reads one variable from the environment of a process.
+# Reads one variable from the environment of a process, without spawning helpers.
 proc_env() {
-    local pid="$1" key="$2"
-    tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n "s/^${key}=//p" | head -1
+    local pid="$1" key="$2" entry
+    [ -r "/proc/$pid/environ" ] || return 0
+    while IFS= read -r -d '' entry; do
+        case "$entry" in
+            "${key}="*) printf '%s\n' "${entry#*=}"; return 0;;
+        esac
+    done < "/proc/$pid/environ"
 }
 
 # True when the AppID is listed in the ignore file.
@@ -113,7 +122,8 @@ main() {
     fi
 
     prefix="$(proc_env "$pid" STEAM_COMPAT_DATA_PATH)"
-    proton_dir="$(proc_env "$pid" STEAM_COMPAT_TOOL_PATHS | cut -d: -f1)"
+    proton_dir="$(proc_env "$pid" STEAM_COMPAT_TOOL_PATHS)"
+    proton_dir="${proton_dir%%:*}"
     if [ -z "$prefix" ] || [ -z "$proton_dir" ]; then
         log "AppID $appid: prefix or Proton directory missing, skipping"
         return 0
@@ -159,7 +169,11 @@ case "${1:-}" in
     --loop)
         while true; do
             main
-            sleep "$POLL_INTERVAL"
+            if [ -n "$(find_game_pid)" ]; then
+                sleep "$POLL_INTERVAL"
+            else
+                sleep "$POLL_IDLE_INTERVAL"
+            fi
         done
         ;;
     *)
