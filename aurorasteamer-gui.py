@@ -113,6 +113,14 @@ class Window(Gtk.Window):
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.add(outer)
 
+        subtitle = Gtk.Label(
+            label="Startet Aurora automatisch mit jedem Steam-Spiel.\n"
+                  "Spiele, die es nicht sollen, hier eintragen.",
+            xalign=0,
+        )
+        subtitle.set_opacity(0.75)
+        outer.pack_start(subtitle, False, False, 0)
+
         # Path to Aurora.exe
         exe_label = Gtk.Label(label="Pfad zu Aurora.exe", xalign=0)
         outer.pack_start(exe_label, False, False, 0)
