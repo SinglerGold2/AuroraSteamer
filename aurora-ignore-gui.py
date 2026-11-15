@@ -106,7 +106,7 @@ def show_error(message):
 
 class Window(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Aurora-Ausnahmen")
+        super().__init__(title="Aurora Autostart")
         self.set_border_width(12)
         self.set_default_size(560, 520)
 
@@ -195,7 +195,7 @@ class Window(Gtk.Window):
             [
                 "notify-send",
                 "-i", "dialog-information",
-                "Aurora-Ausnahmen",
+                "Aurora Autostart",
                 f"Gespeichert, {count} Eintraege in der Liste.",
             ],
             check=False,

@@ -43,7 +43,7 @@ and enables the service.
 
 ## Using the window
 
-Start it from the application menu (**Aurora exceptions**) or with:
+Start it from the application menu (**Aurora Autostart**) or with:
 
 ```bash
 aurora-ignore-gui.py

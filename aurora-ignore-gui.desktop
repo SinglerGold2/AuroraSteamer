@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Aurora exceptions
-Name[de]=Aurora-Ausnahmen
+Name=Aurora Autostart
+Name[de]=Aurora Autostart
 Comment=Edit the Aurora path and the AppIDs that must not start Aurora
 Comment[de]=Aurora-Pfad und AppIDs eintragen, die nicht mit Aurora starten sollen
 Exec=aurora-ignore-gui.py
