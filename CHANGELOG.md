@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.1 - 2026-11-16
+
+- The README opens inside the window as rendered HTML; no external editor is
+  started any more, and its images are installed next to it.
+- The installer also creates PNG icon sizes, for desktops that do not read SVG.
+- Runtime state moved to `$XDG_RUNTIME_DIR`, the log goes to the systemd journal;
+  the home directory only keeps the config and the exception list.
+
 ## 1.0.0 - 2026-11-16
 
 First release.
