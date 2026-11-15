@@ -142,16 +142,24 @@ class Window(Gtk.Window):
         outer = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.add(outer)
 
-        # Language row
+        # Language row, aligned to the top right corner
         self.language_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.language_label = Gtk.Label(xalign=0)
+        spacer = Gtk.Box()
+        spacer.set_hexpand(True)
+        self.language_row.pack_start(spacer, True, True, 0)
+
+        self.language_label = Gtk.Label()
         self.language_row.pack_start(self.language_label, False, False, 0)
+
         self.language_combo = Gtk.ComboBoxText()
         self.language_combo.append("de", "Deutsch")
         self.language_combo.append("en", "English")
         self.language_combo.set_active_id(self.language)
+        self.language_combo.set_size_request(150, -1)
+        self.language_combo.set_popup_fixed_width(False)
         self.language_combo.connect("changed", self.on_language_changed)
         self.language_row.pack_start(self.language_combo, False, False, 0)
+
         outer.pack_start(self.language_row, False, False, 0)
 
         # Subtitle
