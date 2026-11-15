@@ -99,7 +99,10 @@ changes apply immediately. The window stays open after saving; close it with the
 *Schliessen* / *Close* button when you are done.
 
 The AppID is the number in a game's store URL, for example
-`https://store.steampowered.com/app/3321460/`.
+`https://store.steampowered.com/app/3321460/`. You can also read it inside Steam:
+right-click the game, *Properties*, *Updates* - the App-ID is shown at the bottom.
+
+![App-ID in the Steam properties](assets/steam-appid.png)
 
 ## How it works
 
