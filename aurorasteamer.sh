@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# aurora-steam-watch - starts Aurora inside the Proton prefix of the running
+# aurorasteamer - starts Aurora inside the Proton prefix of the running
 # Steam game, so trainers can attach to the game process.
 #
 # Why this is needed: Aurora is a Windows program. Proton gives every game its
@@ -15,7 +15,7 @@ set -u
 
 # ---------------------------------------------------------------------------
 # Configuration. Every value can be overridden in
-# ~/.config/aurora-steam-watcher.conf, which is sourced below if it exists.
+# ~/.config/aurorasteamerer.conf, which is sourced below if it exists.
 # ---------------------------------------------------------------------------
 
 # Path to Aurora.exe
@@ -35,12 +35,12 @@ POLL_IDLE_INTERVAL="${POLL_IDLE_INTERVAL:-30}"
 START_DELAY="${START_DELAY:-5}"
 
 # Where to write the log.
-LOG_FILE="${LOG_FILE:-$HOME/.local/state/aurora-steam-watch.log}"
+LOG_FILE="${LOG_FILE:-$HOME/.local/state/aurorasteamer.log}"
 
 # Remembers which game Aurora was started for, as "appid pid".
-STATE_FILE="${STATE_FILE:-$HOME/.local/state/aurora-steam-watch.state}"
+STATE_FILE="${STATE_FILE:-$HOME/.local/state/aurorasteamer.state}"
 
-CONFIG_FILE="${CONFIG_FILE:-$HOME/.config/aurora-steam-watcher.conf}"
+CONFIG_FILE="${CONFIG_FILE:-$HOME/.config/aurorasteamer.conf}"
 [ -f "$CONFIG_FILE" ] && . "$CONFIG_FILE"
 
 # ---------------------------------------------------------------------------

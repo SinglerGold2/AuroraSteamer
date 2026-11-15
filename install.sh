@@ -8,29 +8,29 @@ BIN_DIR="$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config"
 UNIT_DIR="$CONFIG_DIR/systemd/user"
 
-mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local/share/applications" "$HOME/.local/share/doc/aurora-steam-watcher" "$HOME/.local/share/icons/hicolor/scalable/apps"
+mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local/share/applications" "$HOME/.local/share/doc/aurorasteamer" "$HOME/.local/share/icons/hicolor/scalable/apps"
 
-install -m 755 "$REPO_DIR/aurora-steam-watch.sh" "$BIN_DIR/aurora-steam-watch.sh"
-install -m 755 "$REPO_DIR/aurora-ignore-gui.py" "$BIN_DIR/aurora-ignore-gui.py"
-install -m 644 "$REPO_DIR/aurora-ignore-gui.desktop" "$CONFIG_DIR/../.local/share/applications/aurora-ignore-gui.desktop"
-install -m 644 "$REPO_DIR/aurora-steam-watch.service" "$UNIT_DIR/aurora-steam-watch.service"
+install -m 755 "$REPO_DIR/aurorasteamer.sh" "$BIN_DIR/aurorasteamer.sh"
+install -m 755 "$REPO_DIR/aurorasteamer-gui.py" "$BIN_DIR/aurorasteamer-gui.py"
+install -m 644 "$REPO_DIR/aurorasteamer.desktop" "$HOME/.local/share/applications/aurorasteamer.desktop"
+install -m 644 "$REPO_DIR/aurorasteamer.service" "$UNIT_DIR/aurorasteamer.service"
 
 if [ ! -f "$CONFIG_DIR/aurora-ignore.txt" ]; then
     install -m 644 "$REPO_DIR/aurora-ignore.txt.example" "$CONFIG_DIR/aurora-ignore.txt"
     echo "created $CONFIG_DIR/aurora-ignore.txt"
 fi
 
-if [ ! -f "$CONFIG_DIR/aurora-steam-watcher.conf" ]; then
-    install -m 644 "$REPO_DIR/aurora-steam-watcher.conf.example" "$CONFIG_DIR/aurora-steam-watcher.conf"
-    echo "created $CONFIG_DIR/aurora-steam-watcher.conf"
+if [ ! -f "$CONFIG_DIR/aurorasteamer.conf" ]; then
+    install -m 644 "$REPO_DIR/aurorasteamer.conf.example" "$CONFIG_DIR/aurorasteamer.conf"
+    echo "created $CONFIG_DIR/aurorasteamer.conf"
 fi
 
-install -m 644 "$REPO_DIR/README.md" "$HOME/.local/share/doc/aurora-steam-watcher/README.md"
-install -m 644 "$REPO_DIR/assets/aurora-exceptions.svg" "$HOME/.local/share/icons/hicolor/scalable/apps/aurora-exceptions.svg"
+install -m 644 "$REPO_DIR/README.md" "$HOME/.local/share/doc/aurorasteamer/README.md"
+install -m 644 "$REPO_DIR/assets/aurorasteamer.svg" "$HOME/.local/share/icons/hicolor/scalable/apps/aurorasteamer.svg"
 gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
 systemctl --user daemon-reload
-systemctl --user enable --now aurora-steam-watch.service
+systemctl --user enable --now aurorasteamer.service
 
 echo "installed. check the log with:"
-echo "  tail -f $HOME/.local/state/aurora-steam-watch.log"
+echo "  tail -f $HOME/.local/state/aurorasteamer.log"

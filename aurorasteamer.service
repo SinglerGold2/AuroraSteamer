@@ -1,0 +1,14 @@
+[Unit]
+Description=Starts Aurora automatically with every Steam game
+Documentation=https://github.com/SinglerGold2/aurora-steamer
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/aurorasteamer.sh --loop
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=graphical-session.target

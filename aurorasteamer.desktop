@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=AuroraSteamer
+Name[de]=AuroraSteamer
+Comment=Starts Aurora automatically with every Steam game
+Comment[de]=Startet Aurora automatisch mit jedem Steam-Spiel
+Exec=aurorasteamer-gui.py
+Icon=aurorasteamer
+Terminal=false
+Categories=Utility;Settings;

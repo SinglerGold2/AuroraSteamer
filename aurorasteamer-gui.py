@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Small configuration window for aurora-steam-watcher.
+# Small configuration window for AuroraSteamer.
 # It edits two things: the path to Aurora.exe and the AppIDs that must not
 # start Aurora. The README can be opened from the window.
 import os
@@ -12,11 +12,11 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk  # noqa: E402
 
-CONFIG = os.path.expanduser("~/.config/aurora-steam-watcher.conf")
+CONFIG = os.path.expanduser("~/.config/aurorasteamer.conf")
 IGNORE = os.path.expanduser("~/.config/aurora-ignore.txt")
-DOCS = os.path.expanduser("~/.local/share/doc/aurora-steam-watcher/README.md")
+DOCS = os.path.expanduser("~/.local/share/doc/aurorasteamer/README.md")
 DEFAULT_EXE = os.path.expanduser("~/Aurora/Aurora.exe")
-SERVICE = "aurora-steam-watch.service"
+SERVICE = "aurorasteamer.service"
 
 IGNORE_HEADER = (
     "# AppIDs of Steam games that should not start Aurora.\n"
@@ -106,7 +106,7 @@ def show_error(message):
 
 class Window(Gtk.Window):
     def __init__(self):
-        super().__init__(title="Aurora Autostart")
+        super().__init__(title="AuroraSteamer")
         self.set_border_width(12)
         self.set_default_size(560, 520)
 

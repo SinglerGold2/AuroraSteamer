@@ -1,4 +1,4 @@
-# aurora-steam-watcher
+# AuroraSteamer
 
 Starts [Aurora](https://www.cheathappens.com/) automatically inside the Proton
 prefix of the running Steam game, so its trainers can attach to the game.
@@ -32,8 +32,8 @@ listed as an exception.
 ## Installation
 
 ```bash
-git clone https://github.com/SinglerGold2/aurora-steam-watcher.git
-cd aurora-steam-watcher
+git clone https://github.com/SinglerGold2/aurora-steamer.git
+cd aurora-steamer
 ./install.sh
 ```
 
@@ -43,10 +43,10 @@ and enables the service.
 
 ## Using the window
 
-Start it from the application menu (**Aurora Autostart**) or with:
+Start it from the application menu (**AuroraSteamer**) or with:
 
 ```bash
-aurora-ignore-gui.py
+aurorasteamer-gui.py
 ```
 
 The window has three parts:
@@ -75,15 +75,15 @@ The AppID is the number in a game's store URL, for example
 ## Command line
 
 ```bash
-aurora-steam-watch.sh --dry-run   # print what would happen, start nothing
-aurora-steam-watch.sh --once      # one check
-aurora-steam-watch.sh             # one check (same as --once)
+aurorasteamer.sh --dry-run   # print what would happen, start nothing
+aurorasteamer.sh --once      # one check
+aurorasteamer.sh             # one check (same as --once)
 ```
 
 ## Configuration file
 
-`~/.config/aurora-steam-watcher.conf`, written by the window. Every setting is
-optional and commented in `aurora-steam-watcher.conf.example`:
+`~/.config/aurorasteamer.conf`, written by the window. Every setting is
+optional and commented in `aurorasteamer.conf.example`:
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -91,14 +91,14 @@ optional and commented in `aurora-steam-watcher.conf.example`:
 | `IGNORE_FILE` | `$HOME/.config/aurora-ignore.txt` | Exception list |
 | `POLL_INTERVAL` | `10` | Seconds between checks |
 | `START_DELAY` | `5` | Seconds to wait before Aurora starts |
-| `LOG_FILE` | `$HOME/.local/state/aurora-steam-watch.log` | Log file |
-| `STATE_FILE` | `$HOME/.local/state/aurora-steam-watch.state` | Remembers the running instance |
+| `LOG_FILE` | `$HOME/.local/state/aurorasteamer.log` | Log file |
+| `STATE_FILE` | `$HOME/.local/state/aurorasteamer.state` | Remembers the running instance |
 
 ## Troubleshooting
 
 ```bash
-tail -f ~/.local/state/aurora-steam-watch.log
-systemctl --user status aurora-steam-watch.service
+tail -f ~/.local/state/aurorasteamer.log
+systemctl --user status aurorasteamer.service
 ```
 
 - *No game detected*: the game must run through Proton, not natively.
