@@ -52,7 +52,7 @@ TEXTS = {
         "invalid": "Bitte eine Zahl eingeben.",
         "duplicate": "Diese AppID steht schon in der Liste.",
         "help": "Hilfe / README",
-        "cancel": "Abbrechen",
+        "close": "Schließen",
         "save": "Speichern",
         "saved": "Gespeichert, {count} Einträge in der Liste.",
         "missing_readme": "Die README wurde nicht gefunden. Bitte das Projekt neu installieren.",
@@ -75,7 +75,7 @@ TEXTS = {
         "invalid": "Please enter a number.",
         "duplicate": "This AppID is already in the list.",
         "help": "Help / README",
-        "cancel": "Cancel",
+        "close": "Close",
         "save": "Save",
         "saved": "Saved, {count} entries in the list.",
         "missing_readme": "README not found. Please reinstall the project.",
@@ -295,9 +295,9 @@ class Window(Gtk.Window):
         self.help_button = Gtk.Button()
         self.help_button.connect("clicked", lambda _button: self.open_readme())
         buttons.pack_start(self.help_button, False, False, 0)
-        self.cancel_button = Gtk.Button()
-        self.cancel_button.connect("clicked", lambda _button: self.destroy())
-        buttons.pack_end(self.cancel_button, False, False, 0)
+        self.close_button = Gtk.Button()
+        self.close_button.connect("clicked", lambda _button: self.destroy())
+        buttons.pack_end(self.close_button, False, False, 0)
         self.save_button = Gtk.Button()
         self.save_button.get_style_context().add_class("suggested-action")
         self.save_button.connect("clicked", self.on_save)
@@ -321,7 +321,7 @@ class Window(Gtk.Window):
         self.add_entry.set_placeholder_text(self.t("add_placeholder"))
         self.add_button.set_label(self.t("add"))
         self.help_button.set_label(self.t("help"))
-        self.cancel_button.set_label(self.t("cancel"))
+        self.close_button.set_label(self.t("close"))
         self.save_button.set_label(self.t("save"))
         for row in self.rows:
             row.remove_button.set_label(self.t("remove"))
@@ -400,12 +400,12 @@ class Window(Gtk.Window):
         write_config_value("LANGUAGE", self.language)
         count = write_ids([row.appid for row in self.rows])
         subprocess.run(["systemctl", "--user", "restart", SERVICE], check=False)
+        message = self.t("saved").format(count=count)
+        self.message.set_text(message)
         subprocess.run(
-            ["notify-send", "-i", "aurorasteamer", self.t("title"),
-             self.t("saved").format(count=count)],
+            ["notify-send", "-i", "aurorasteamer", self.t("title"), message],
             check=False,
         )
-        self.destroy()
 
     def open_readme(self):
         path = DOCS

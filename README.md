@@ -73,7 +73,8 @@ The window has three parts:
 - **Hilfe / README** - opens this file.
 
 Saving writes the config, writes the exception list and restarts the watcher, so
-changes apply immediately.
+changes apply immediately. The window stays open after saving; close it with the
+*Schliessen* / *Close* button when you are done.
 
 The AppID is the number in a game's store URL, for example
 `https://store.steampowered.com/app/3321460/`.
