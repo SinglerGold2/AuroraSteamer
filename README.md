@@ -148,8 +148,9 @@ are there, so adding `fr.json` adds French to the menu - no code change needed:
 Shipped languages:
 
 ```
-locale/de.json   Deutsch
-locale/en.json   English
+locale/de.json    Deutsch
+locale/en.json    English
+locale/tlh.json   tlhIngan Hol  (yes, really)
 ```
 
 Every file needs a `name` for the language menu and a `texts` object with the
