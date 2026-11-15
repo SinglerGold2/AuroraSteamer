@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Aurora exceptions
+Name[de]=Aurora-Ausnahmen
+Comment=Edit the AppIDs that must not start Aurora
+Comment[de]=AppIDs eintragen, die nicht mit Aurora starten sollen
+Exec=aurora-ignore-gui.sh
+Icon=preferences-system
+Terminal=false
+Categories=Utility;Settings;

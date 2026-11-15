@@ -8,9 +8,11 @@ BIN_DIR="$HOME/.local/bin"
 CONFIG_DIR="$HOME/.config"
 UNIT_DIR="$CONFIG_DIR/systemd/user"
 
-mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state"
+mkdir -p "$BIN_DIR" "$CONFIG_DIR" "$UNIT_DIR" "$HOME/.local/state" "$HOME/.local/share/applications"
 
 install -m 755 "$REPO_DIR/aurora-steam-watch.sh" "$BIN_DIR/aurora-steam-watch.sh"
+install -m 755 "$REPO_DIR/aurora-ignore-gui.sh" "$BIN_DIR/aurora-ignore-gui.sh"
+install -m 644 "$REPO_DIR/aurora-ignore-gui.desktop" "$CONFIG_DIR/../.local/share/applications/aurora-ignore-gui.desktop"
 install -m 644 "$REPO_DIR/aurora-steam-watch.service" "$UNIT_DIR/aurora-steam-watch.service"
 
 if [ ! -f "$CONFIG_DIR/aurora-ignore.txt" ]; then

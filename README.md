@@ -53,6 +53,14 @@ cp aurora-steam-watcher.conf.example ~/.config/aurora-steam-watcher.conf
 | `LOG_FILE` | `$HOME/.local/state/aurora-steam-watch.log` | Log file |
 | `STATE_FILE` | `$HOME/.local/state/aurora-steam-watch.state` | Remembers the running instance |
 
+## GUI for the exception list
+
+`aurora-ignore-gui.sh` opens a small window with the list: one AppID per line,
+save, done. Blank lines, spaces and duplicates are removed on save. The watcher
+reads the file on every check, so nothing has to be restarted.
+
+`install.sh` also installs a desktop entry called "Aurora exceptions".
+
 ## Exceptions
 
 Add the AppID of a game that must not start Aurora, one per line:
