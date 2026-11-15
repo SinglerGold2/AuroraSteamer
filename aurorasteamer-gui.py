@@ -39,6 +39,11 @@ TEXTS = {
         "subtitle": "Startet Aurora automatisch mit jedem Steam-Spiel.\n"
                     "Spiele, die es nicht sollen, hier eintragen.",
         "language": "Sprache",
+        "watcher": "Wächter",
+        "watcher_state_on": "Wächter: an",
+        "watcher_state_off": "Wächter: aus",
+        "watcher_on": "Aurora startet automatisch mit jedem Steam-Spiel",
+        "watcher_off": "Aurora startet nicht automatisch",
         "path": "Pfad zu Aurora.exe",
         "browse": "Durchsuchen...",
         "browse_title": "Aurora.exe auswählen",
@@ -70,6 +75,11 @@ TEXTS = {
         "subtitle": "Starts Aurora automatically with every Steam game.\n"
                     "Games that should not be started with it go below.",
         "language": "Language",
+        "watcher": "Watcher",
+        "watcher_state_on": "Watcher: on",
+        "watcher_state_off": "Watcher: off",
+        "watcher_on": "Aurora starts automatically with every Steam game",
+        "watcher_off": "Aurora does not start automatically",
         "path": "Path to Aurora.exe",
         "browse": "Browse...",
         "browse_title": "Select Aurora.exe",
@@ -288,6 +298,15 @@ class Row:
             self.name_label.set_text(self.window_ref.t("notfound"))
 
 
+def service_active():
+    """True when the watcher service is running."""
+    result = subprocess.run(
+        ["systemctl", "--user", "is-active", SERVICE],
+        capture_output=True, text=True, check=False,
+    )
+    return result.stdout.strip() == "active"
+
+
 class GamesDialog(Gtk.Dialog):
     """Shows the installed Steam games with a checkbox for the exception list."""
 
@@ -363,6 +382,7 @@ class Window(Gtk.Window):
             self.language = system_language()
         self.cache = load_cache()
         self.rows = []
+        self.loading = True
 
         self.set_border_width(12)
         self.set_default_size(680, 620)
@@ -391,6 +411,17 @@ class Window(Gtk.Window):
         self.language_button.set_popover(popover)
         language_row.pack_start(self.language_button, False, False, 0)
         outer.pack_start(language_row, False, False, 0)
+
+        # Watcher switch
+        watcher_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        self.watcher_label = Gtk.Label(xalign=0)
+        self.watcher_label.set_hexpand(True)
+        watcher_row.pack_start(self.watcher_label, True, True, 0)
+        self.watcher_button = Gtk.ToggleButton()
+        self.watcher_button.set_active(service_active())
+        self.watcher_button.connect("toggled", self.on_watcher_toggled)
+        watcher_row.pack_end(self.watcher_button, False, False, 0)
+        outer.pack_start(watcher_row, False, False, 0)
 
         # Subtitle
         self.subtitle = Gtk.Label(xalign=0)
@@ -465,8 +496,15 @@ class Window(Gtk.Window):
         buttons.pack_end(self.save_button, False, False, 0)
 
         self.apply_language()
+        GLib.idle_add(self.sync_watcher_switch)
         for appid in read_ids():
             self.add_row(appid, self.cache.get(appid))
+
+    def sync_watcher_switch(self):
+        """Sets the button once the window is realised, without firing the handler."""
+        self.watcher_button.set_active(service_active())
+        self.loading = False
+        return False
 
     def t(self, key):
         return TEXTS[self.language][key]
@@ -475,6 +513,10 @@ class Window(Gtk.Window):
         self.set_title(self.t("title"))
         self.language_label.set_text(self.t("language") + ":")
         self.language_button.set_label("Deutsch" if self.language == "de" else "English")
+        self.watcher_label.set_text(self.t("watcher"))
+        self.watcher_button.set_label(
+            self.t("watcher_state_on") if self.watcher_button.get_active() else self.t("watcher_state_off")
+        )
         self.subtitle.set_text(self.t("subtitle"))
         self.path_label.set_text(self.t("path"))
         self.browse_button.set_label(self.t("browse"))
@@ -490,6 +532,15 @@ class Window(Gtk.Window):
             row.remove_button.set_label(self.t("remove"))
             if not row.name:
                 row.set_name(None)
+
+    def on_watcher_toggled(self, button):
+        active = button.get_active()
+        button.set_label(self.t("watcher_state_on") if active else self.t("watcher_state_off"))
+        if getattr(self, "loading", False):
+            return
+        action = "enable" if active else "disable"
+        subprocess.run(["systemctl", "--user", action, "--now", SERVICE], check=False)
+        self.message.set_text(self.t("watcher_on") if active else self.t("watcher_off"))
 
     def on_language_selected(self, _button, language):
         if language in TEXTS:
