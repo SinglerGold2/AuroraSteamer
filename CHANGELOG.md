@@ -6,6 +6,10 @@
   session runs, and the service started Aurora for it on every poll, which looked
   like an Aurora that could not be closed. `IGNORE_APPIDS` now carries steamvr,
   its beta and the Linux runtime.
+- The game is found by its environment, not by the newest process whose command
+  line matches. Several processes carry `SteamLaunch AppId=`, and only some of
+  them have `STEAM_COMPAT_APP_ID`; the old pick failed with "no AppID" every ten
+  seconds while SteamVR ran.
 - The state stores the PID of the Aurora process, not the launcher's. wine forks
   and exits, so the recorded PID died seconds after the start; the service
   believed Aurora was gone, marked it closed and lost track of a running window.

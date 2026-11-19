@@ -70,9 +70,18 @@ say() {
     return 0
 }
 
-# Prints the PID of the newest running Proton game, or nothing.
+# Prints the PID of a running Proton game, or nothing. Several processes carry
+# "SteamLaunch AppId=" in their command line, and only the launcher's children
+# have STEAM_COMPAT_APP_ID in their environment, so the first one that carries
+# the variable wins.
 find_game_pid() {
-    pgrep -f "SteamLaunch AppId=" 2>/dev/null | tail -1
+    local candidate
+    for candidate in $(pgrep -f "SteamLaunch AppId=" 2>/dev/null); do
+        if [ -n "$(proc_env "$candidate" STEAM_COMPAT_APP_ID)" ]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
 }
 
 # Reads one variable from the environment of a process, without spawning helpers.
