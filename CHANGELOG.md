@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.2 - 2026-11-19
+
+- Aurora can be closed while a game runs. It used to be started again within
+  fifteen seconds, which made the window impossible to get rid of. The service
+  now notes the close and leaves it closed for that game.
+- One instance, ever: a running Aurora is left alone when another game comes to
+  the front, instead of being killed and restarted.
+- The state file carries a marker (`started`, `closed`), and it is cleared when
+  no game runs, so the next game starts Aurora as usual.
+
 ## 1.0.1 - 2026-11-16
 
 - The README opens inside the window as rendered HTML; no external editor is

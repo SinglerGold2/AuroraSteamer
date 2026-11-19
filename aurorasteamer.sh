@@ -36,9 +36,11 @@ POLL_IDLE_INTERVAL="${POLL_IDLE_INTERVAL:-30}"
 # Seconds to wait before starting Aurora after the game was detected.
 START_DELAY="${START_DELAY:-5}"
 
-# Remembers which game Aurora was started for, as "appid pid". Kept in the
-# runtime directory, so nothing is written to the home directory and the file
-# disappears when the session ends.
+# Remembers which game Aurora was started for, as "appid pid marker". The
+# marker is "started" while we believe Aurora runs, and "closed" once it
+# disappeared while the game still runs: a person closed it, so it stays
+# closed until the game ends. Kept in the runtime directory, so nothing is written to the home
+# directory and the file disappears when the session ends.
 STATE_FILE="${STATE_FILE:-${XDG_RUNTIME_DIR:-/tmp}/aurorasteamer.state}"
 
 CONFIG_FILE="${CONFIG_FILE:-$HOME/.config/aurorasteamer.conf}"
@@ -99,15 +101,18 @@ start_aurora() {
     WINEPREFIX="$prefix" WINEDEBUG=-all \
         setsid "$wine_bin" "$AURORA_EXE" >/dev/null 2>&1 &
     pid=$!
-    printf '%s %s\n' "$appid" "$pid" > "$STATE_FILE"
+    printf '%s %s started\n' "$appid" "$pid" > "$STATE_FILE"
 }
 
 main() {
     local pid appid prefix proton_dir wine_bin
-    local previous_appid="" previous_pid=""
+    local previous_appid="" previous_pid="" previous_marker=""
 
     pid="$(find_game_pid)"
     if [ -z "$pid" ]; then
+        # No game: the next one starts with a clean slate, so closing Aurora in
+        # one game does not keep it closed in the next.
+        [ -f "$STATE_FILE" ] && rm -f "$STATE_FILE"
         say "no game running"
         return 0
     fi
@@ -120,6 +125,31 @@ main() {
 
     if is_ignored "$appid"; then
         say "AppID $appid is ignored"
+        return 0
+    fi
+
+    # The state remembers what happened last time. Read it before anything else
+    # is looked up: whether Aurora runs, or was closed, decides the answer on
+    # its own.
+    if [ -f "$STATE_FILE" ]; then
+        read -r previous_appid previous_pid previous_marker < "$STATE_FILE" || true
+    fi
+
+    # One instance, ever. If Aurora runs, it is left alone, whatever game is in
+    # front: starting a second one would give two windows fighting over the same
+    # files.
+    if [ -n "${previous_pid:-}" ] && [ "${previous_pid}" != "0" ] && kill -0 "$previous_pid" 2>/dev/null; then
+        if [ "${previous_appid:-}" = "$appid" ]; then
+            say "Aurora already running for this game"
+        else
+            say "Aurora already running for AppID ${previous_appid:-unknown}, not starting a second"
+        fi
+        return 0
+    fi
+
+    # It was closed for this very game: leave it closed until the game ends.
+    if [ "${previous_appid:-}" = "$appid" ] && [ "${previous_marker:-}" = "closed" ]; then
+        say "Aurora was closed for AppID $appid, leaving it closed"
         return 0
     fi
 
@@ -138,24 +168,31 @@ main() {
     say "prefix $prefix"
     say "wine $wine_bin"
 
-    # Reuse a running instance only if it belongs to the same game.
+    # One instance, ever. If Aurora runs, it is left alone, whatever game is
+    # in front: starting a second one would give two windows fighting over the
+    # same files.
     if [ -f "$STATE_FILE" ]; then
-        read -r previous_appid previous_pid < "$STATE_FILE" || true
+        read -r previous_appid previous_pid previous_marker < "$STATE_FILE" || true
     fi
-    if [ -n "${previous_pid:-}" ] && kill -0 "$previous_pid" 2>/dev/null; then
+    if [ -n "${previous_pid:-}" ] && [ "${previous_pid}" != "0" ] && kill -0 "$previous_pid" 2>/dev/null; then
         if [ "${previous_appid:-}" = "$appid" ]; then
             say "Aurora already running for this game"
-            return 0
+        else
+            say "Aurora already running for AppID ${previous_appid:-unknown}, not starting a second"
         fi
-        log "game changed from ${previous_appid:-none} to $appid, restarting"
-        if [ "$DRY_RUN" = "0" ]; then
-            stop_started_instance "$previous_pid"
-            sleep 5
-        fi
+        return 0
     fi
 
     if [ ! -x "$wine_bin" ]; then
         log "AppID $appid: wine binary not found at $wine_bin"
+        return 0
+    fi
+
+    if [ "${previous_appid:-}" = "$appid" ] && [ -n "${previous_pid:-}" ] && [ "${previous_pid}" != "0" ]; then
+        if [ "$DRY_RUN" = "0" ]; then
+            printf '%s 0 closed\n' "$appid" > "$STATE_FILE"
+        fi
+        log "Aurora disappeared while AppID $appid runs, not starting it again"
         return 0
     fi
 

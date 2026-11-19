@@ -180,7 +180,7 @@ optional and commented in `aurorasteamer.conf.example`:
 | `IGNORE_FILE` | `$HOME/.config/aurora-ignore.txt` | Exception list |
 | `POLL_INTERVAL` | `10` | Seconds between checks |
 | `START_DELAY` | `5` | Seconds to wait before Aurora starts |
-| `STATE_FILE` | `$XDG_RUNTIME_DIR/aurorasteamer.state` | Remembers the running instance |
+| `STATE_FILE` | `$XDG_RUNTIME_DIR/aurorasteamer.state` | Remembers the running instance and whether it was closed |
 
 ## Troubleshooting
 
@@ -209,3 +209,22 @@ systemctl --user status aurorasteamer.service
 ## License
 
 GPL-3.0-or-later. See [LICENSE](LICENSE).
+
+## Behaviour in detail
+
+Aurora starts when a Proton game starts, and it can be closed at any time. Three
+rules hold:
+
+1. **One instance, ever.** While Aurora runs, no second one is started, even when
+   another game comes to the front. The running window is left alone.
+2. **Closing is final.** When Aurora disappears while its game still runs, the
+   service notes that and does not start it again for that game. Closing it means
+   closing it.
+3. **A new game starts it again.** When no game is running, the state is cleared,
+   so the next game gets a fresh instance.
+
+To force a start while a game runs, delete the state file:
+
+```bash
+rm "${XDG_RUNTIME_DIR:-/tmp}/aurorasteamer.state"
+```
