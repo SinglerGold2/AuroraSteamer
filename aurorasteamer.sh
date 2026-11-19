@@ -26,6 +26,11 @@ AURORA_EXE="${AURORA_EXE:-$HOME/Aurora/Aurora.exe}"
 # File with one Steam AppID per line. Games listed there are skipped.
 IGNORE_FILE="${IGNORE_FILE:-$HOME/.config/aurora-ignore.txt}"
 
+# AppIDs that are not games and must never count as one. SteamVR reports itself
+# with 250820 while it runs, so without this list every VR session would look
+# like a game and Aurora would be started for it.
+IGNORE_APPIDS="${IGNORE_APPIDS:-250820 250821 1070560}"
+
 # How often the loop looks for a running game, in seconds.
 POLL_INTERVAL="${POLL_INTERVAL:-10}"
 
@@ -81,9 +86,12 @@ proc_env() {
     done < "/proc/$pid/environ"
 }
 
-# True when the AppID is listed in the ignore file.
+# True when the AppID is listed in the ignore file or in IGNORE_APPIDS.
 is_ignored() {
-    local appid="$1"
+    local appid="$1" known
+    for known in $IGNORE_APPIDS; do
+        [ "$known" = "$appid" ] && return 0
+    done
     [ -f "$IGNORE_FILE" ] || return 1
     grep -qE "^[[:space:]]*${appid}[[:space:]]*$" "$IGNORE_FILE"
 }
@@ -101,6 +109,19 @@ start_aurora() {
     WINEPREFIX="$prefix" WINEDEBUG=-all \
         setsid "$wine_bin" "$AURORA_EXE" >/dev/null 2>&1 &
     pid=$!
+    # wine may fork and leave the launched process behind, so the PID of the
+    # launcher says nothing. Ask for the Aurora process itself for a few
+    # seconds; without this the service believes Aurora died right after the
+    # start and loses track of it.
+    local real i
+    for i in 1 2 3 4 5 6 7 8 9 10; do
+        real="$(pgrep -f 'Aurora\.exe' 2>/dev/null | grep -v "^$$\$" | tail -1)"
+        if [ -n "$real" ]; then
+            pid="$real"
+            break
+        fi
+        sleep 1
+    done
     printf '%s %s started\n' "$appid" "$pid" > "$STATE_FILE"
 }
 

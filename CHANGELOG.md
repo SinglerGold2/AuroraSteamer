@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.3 - 2026-11-19
+
+- SteamVR no longer counts as a game. Its own AppID 250820 appears while a VR
+  session runs, and the service started Aurora for it on every poll, which looked
+  like an Aurora that could not be closed. `IGNORE_APPIDS` now carries steamvr,
+  its beta and the Linux runtime.
+- The state stores the PID of the Aurora process, not the launcher's. wine forks
+  and exits, so the recorded PID died seconds after the start; the service
+  believed Aurora was gone, marked it closed and lost track of a running window.
+
 ## 1.0.2 - 2026-11-19
 
 - Aurora can be closed while a game runs. It used to be started again within

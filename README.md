@@ -228,3 +228,14 @@ To force a start while a game runs, delete the state file:
 ```bash
 rm "${XDG_RUNTIME_DIR:-/tmp}/aurorasteamer.state"
 ```
+
+### What counts as a game
+
+SteamVR reports itself as AppID 250820 while it runs. That is not a game, and
+`IGNORE_APPIDS` keeps it, its beta and the Steam Linux Runtime out of the
+detection. Without it, every VR session would start Aurora.
+
+The state file stores the PID of the Aurora process itself, found after the
+start. wine forks and the launcher exits, so the PID of the launcher would be
+dead within seconds and the service would lose track of a window that is still
+open.
