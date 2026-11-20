@@ -135,13 +135,23 @@ start_aurora() {
 }
 
 main() {
-    local pid appid prefix proton_dir wine_bin
+    local pid appid prefix proton_dir wine_bin existing
     local previous_appid="" previous_pid="" previous_marker=""
+
+    if [ -f "$STATE_FILE" ]; then
+        read -r previous_appid previous_pid previous_marker < "$STATE_FILE" || true
+    fi
 
     pid="$(find_game_pid)"
     if [ -z "$pid" ]; then
-        # No game: the next one starts with a clean slate, so closing Aurora in
-        # one game does not keep it closed in the next.
+        # The game is over. The instance started for it has done its job, so it
+        # is stopped here instead of lingering as a window nobody can assign to
+        # a game. Without this, the next game found an empty state and started a
+        # second Aurora next to the first.
+        if [ -n "${previous_pid:-}" ] && [ "${previous_pid}" != "0" ] && kill -0 "$previous_pid" 2>/dev/null; then
+            log "game ended, stopping Aurora for AppID ${previous_appid:-unknown}"
+            stop_started_instance "$previous_pid"
+        fi
         [ -f "$STATE_FILE" ] && rm -f "$STATE_FILE"
         say "no game running"
         return 0
@@ -156,13 +166,6 @@ main() {
     if is_ignored "$appid"; then
         say "AppID $appid is ignored"
         return 0
-    fi
-
-    # The state remembers what happened last time. Read it before anything else
-    # is looked up: whether Aurora runs, or was closed, decides the answer on
-    # its own.
-    if [ -f "$STATE_FILE" ]; then
-        read -r previous_appid previous_pid previous_marker < "$STATE_FILE" || true
     fi
 
     # One instance, ever. If Aurora runs, it is left alone, whatever game is in
@@ -182,6 +185,19 @@ main() {
         say "Aurora was closed for AppID $appid, leaving it closed"
         return 0
     fi
+
+    # An Aurora that runs without being recorded (started before this service,
+    # or left over from a game that ended) is taken over instead of starting a
+    # second one beside it.
+    existing="$(pgrep -f 'Aurora\.exe' 2>/dev/null | grep -v "^$$\$" | tail -1)"
+    if [ -n "$existing" ]; then
+        if [ "$DRY_RUN" = "0" ]; then
+            printf '%s %s started\n' "$appid" "$existing" > "$STATE_FILE"
+        fi
+        log "Aurora already runs as PID $existing, taking it over for AppID $appid"
+        return 0
+    fi
+
 
     prefix="$(proc_env "$pid" STEAM_COMPAT_DATA_PATH)"
     proton_dir="$(proc_env "$pid" STEAM_COMPAT_TOOL_PATHS)"

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.4 - 2026-11-20
+
+- Aurora is stopped when the game it was started for ends. It used to stay as an
+  orphan window in the service's cgroup, and a later game found an empty state
+  and started a second instance beside it.
+- An Aurora that runs without being recorded is adopted instead of duplicated:
+  the service takes over its PID and keeps it for the current game.
+
 ## 1.0.3 - 2026-11-19
 
 - SteamVR no longer counts as a game. Its own AppID 250820 appears while a VR

@@ -239,3 +239,11 @@ The state file stores the PID of the Aurora process itself, found after the
 start. wine forks and the launcher exits, so the PID of the launcher would be
 dead within seconds and the service would lose track of a window that is still
 open.
+
+### Cleanup between games
+
+Aurora is stopped when the game it belongs to ends. Nothing is left open that
+cannot be assigned to a game, and the next game starts with a clean slate.
+
+If Aurora runs anyway, for example one started by hand, the service takes it
+over: the running PID is recorded and no second instance is started.
