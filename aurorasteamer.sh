@@ -200,15 +200,35 @@ main() {
 
 
     prefix="$(proc_env "$pid" STEAM_COMPAT_DATA_PATH)"
+    # STEAM_COMPAT_TOOL_PATHS holds the runtimes first and Proton later, and a
+    # native Linux game has no Proton entry at all. Look for the entry that
+    # actually carries a wine binary instead of taking the first one.
     proton_dir="$(proc_env "$pid" STEAM_COMPAT_TOOL_PATHS)"
-    proton_dir="${proton_dir%%:*}"
-    if [ -z "$prefix" ] || [ -z "$proton_dir" ]; then
-        log "AppID $appid: prefix or Proton directory missing, skipping"
+    wine_bin=""
+    if [ -n "$proton_dir" ]; then
+        local tool
+        for tool in ${proton_dir//:/ }; do
+            if [ -x "$tool/files/bin/wine" ]; then
+                wine_bin="$tool/files/bin/wine"
+                break
+            fi
+        done
+    fi
+    if [ -z "$prefix" ]; then
+        log "AppID $appid: prefix missing, skipping"
+        return 0
+    fi
+    if [ -z "$wine_bin" ]; then
+        # A native Linux game has no Wine, so a Windows program cannot attach.
+        # Say it once instead of once per poll.
+        if [ "${previous_marker:-}" != "unsupported" ] || [ "${previous_appid:-}" != "$appid" ]; then
+            log "AppID $appid runs without Proton, Aurora cannot attach to it"
+            [ "$DRY_RUN" = "0" ] && printf '%s 0 unsupported\n' "$appid" > "$STATE_FILE"
+        fi
         return 0
     fi
 
     prefix="$prefix/pfx"
-    wine_bin="$proton_dir/files/bin/wine"
 
     say "AppID $appid"
     say "prefix $prefix"
@@ -226,11 +246,6 @@ main() {
         else
             say "Aurora already running for AppID ${previous_appid:-unknown}, not starting a second"
         fi
-        return 0
-    fi
-
-    if [ ! -x "$wine_bin" ]; then
-        log "AppID $appid: wine binary not found at $wine_bin"
         return 0
     fi
 

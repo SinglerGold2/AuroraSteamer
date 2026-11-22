@@ -247,3 +247,17 @@ cannot be assigned to a game, and the next game starts with a clean slate.
 
 If Aurora runs anyway, for example one started by hand, the service takes it
 over: the running PID is recorded and no second instance is started.
+
+### Native Linux games
+
+Aurora is a Windows program and needs a Proton prefix to attach to. A game that
+ships a native Linux build, such as Crusader Kings III, runs in the Steam Linux
+Runtime instead and has no wine. The service notices that, logs it once and
+leaves the game alone:
+
+```
+AppID <id> runs without Proton, Aurora cannot attach to it
+```
+
+Proton is picked by looking for the `files/bin/wine` binary among the entries of
+`STEAM_COMPAT_TOOL_PATHS`, because that variable lists the runtimes first.

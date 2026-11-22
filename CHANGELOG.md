@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.5 - 2026-11-22
+
+- Native Linux games are recognised and skipped with one log line. They carry a
+  Steam Linux Runtime but no Proton, so there is no wine to start Aurora with.
+  Before, the service tried every ten seconds and logged "wine binary not found",
+  which looked like a fault.
+- Proton is found where it actually is. `STEAM_COMPAT_TOOL_PATHS` lists runtimes
+  first and Proton later; the service now takes the entry that has a wine binary
+  instead of the first one. This is what kept Crusader Kings III and other games
+  from getting Aurora despite running under Proton.
+
 ## 1.0.4 - 2026-11-20
 
 - Aurora is stopped when the game it was started for ends. It used to stay as an
