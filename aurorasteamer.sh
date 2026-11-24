@@ -22,7 +22,6 @@ set -u
 
 # Path to Aurora.exe
 AURORA_EXE="${AURORA_EXE:-$HOME/Aurora/Aurora.exe}"
-DESKTOP_NAME="${DESKTOP_NAME:-aurora}"
 
 # File with one Steam AppID per line. Games listed there are skipped.
 IGNORE_FILE="${IGNORE_FILE:-$HOME/.config/aurora-ignore.txt}"
@@ -111,18 +110,18 @@ stop_started_instance() {
     local pid="$1"
     [ -n "$pid" ] || return 0
     kill -0 "$pid" 2>/dev/null && kill "$pid" 2>/dev/null
-    # The virtual desktop host would stay behind as an empty window.
-    pkill -f "explorer /desktop=$DESKTOP_NAME" 2>/dev/null
 }
 
 start_aurora() {
     local prefix="$1" wine_bin="$2" appid="$3" pid
     log "starting Aurora for AppID $appid in $prefix"
-    # Wine gets its own desktop. Without it Aurora draws its own title bar
-    # inside a window that the window manager also decorates, and the two
-    # overlap so the trainer's close button cannot be reached.
+    # Tell Wine in this prefix not to ask for window decorations. Aurora draws
+    # its own title bar; a second frame from the window manager covers it and
+    # the trainer's close button becomes unreachable.
     WINEPREFIX="$prefix" WINEDEBUG=-all \
-        setsid "$wine_bin" explorer "/desktop=$DESKTOP_NAME,1600x1200" "$AURORA_EXE" >/dev/null 2>&1 &
+        "$wine_bin" reg add 'HKCU\Software\Wine\X11 Driver' /v Decorated /t REG_SZ /d N /f >/dev/null 2>&1
+    WINEPREFIX="$prefix" WINEDEBUG=-all \
+        setsid "$wine_bin" "$AURORA_EXE" >/dev/null 2>&1 &
     pid=$!
     # wine may fork and leave the launched process behind, so the PID of the
     # launcher says nothing. Ask for the Aurora process itself for a few

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.8 - 2026-11-24
+
+- Aurora runs as a normal window again, but Wine is told not to request window
+  decorations (`HKCU\Software\Wine\X11 Driver` -> `Decorated=N`) before it is
+  started. The window manager then adds no frame, so Aurora's own title bar is
+  visible and nothing shifts. The virtual desktop from 1.0.7 is gone: it opened
+  fullscreen, left a wide margin and did not resize Aurora with it.
+
 ## 1.0.7 - 2026-11-24
 
 - Aurora starts inside a Wine virtual desktop (`explorer /desktop=aurora,1600x1200`).
