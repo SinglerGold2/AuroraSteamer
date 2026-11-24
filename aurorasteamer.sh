@@ -115,11 +115,6 @@ stop_started_instance() {
 start_aurora() {
     local prefix="$1" wine_bin="$2" appid="$3" pid
     log "starting Aurora for AppID $appid in $prefix"
-    # Tell Wine in this prefix not to ask for window decorations. Aurora draws
-    # its own title bar; a second frame from the window manager covers it and
-    # the trainer's close button becomes unreachable.
-    WINEPREFIX="$prefix" WINEDEBUG=-all \
-        "$wine_bin" reg add 'HKCU\Software\Wine\X11 Driver' /v Decorated /t REG_SZ /d N /f >/dev/null 2>&1
     WINEPREFIX="$prefix" WINEDEBUG=-all \
         setsid "$wine_bin" "$AURORA_EXE" >/dev/null 2>&1 &
     pid=$!

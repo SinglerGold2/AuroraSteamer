@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.9 - 2026-11-24
+
+- Reverted the decoration experiments. The WINE registry switch was prefix wide,
+  so it also removed the frame from the game window, and Aurora ended up without
+  any title bar on the wrong screen. Aurora starts as a normal window again; the
+  window manager frame provides moving, resizing and closing.
+
 ## 1.0.8 - 2026-11-24
 
 - Aurora runs as a normal window again, but Wine is told not to request window
