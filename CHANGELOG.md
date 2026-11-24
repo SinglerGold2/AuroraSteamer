@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.6 - 2026-11-24
+
+- Proton directories with spaces work now, for example "Proton - Experimental".
+  The entry list was split on whitespace in addition to colons, so such a path
+  fell apart into "Proton", "-" and "Experimental" and no wine was found. The
+  service reported "runs without Proton" for Windows games and started no
+  Aurora. It splits on colons only now.
+
 ## 1.0.5 - 2026-11-22
 
 - Native Linux games are recognised and skipped with one log line. They carry a

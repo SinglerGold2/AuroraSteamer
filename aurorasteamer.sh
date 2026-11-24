@@ -207,7 +207,10 @@ main() {
     wine_bin=""
     if [ -n "$proton_dir" ]; then
         local tool
-        for tool in ${proton_dir//:/ }; do
+        # Split on colons only: Proton directories may contain spaces.
+        local -a tools=()
+        IFS=':' read -r -a tools <<< "$proton_dir"
+        for tool in "${tools[@]}"; do
             if [ -x "$tool/files/bin/wine" ]; then
                 wine_bin="$tool/files/bin/wine"
                 break

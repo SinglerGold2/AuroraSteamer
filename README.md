@@ -261,3 +261,9 @@ AppID <id> runs without Proton, Aurora cannot attach to it
 
 Proton is picked by looking for the `files/bin/wine` binary among the entries of
 `STEAM_COMPAT_TOOL_PATHS`, because that variable lists the runtimes first.
+
+### Proton folders with spaces
+
+The list in `STEAM_COMPAT_TOOL_PATHS` is separated by colons. Folder names may
+contain spaces, as in `Proton - Experimental`. The service splits on colons only,
+otherwise such a path breaks apart and no wine is found.
