@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 - 2026-11-24
+
+- Decision: Aurora runs as a decorated window. The window manager frame gives
+  move, resize, minimise, maximise and close. Aurora paints a full-window
+  interface and expects to own its top edge, so the top 40 pixels of its own bar
+  are covered by the frame. The alternative (borderless, own bar visible,
+  shortcuts for moving) was rejected. All decoration tricks are gone; the start
+  is a plain `wine Aurora.exe` again.
+
 ## 1.0.9 - 2026-11-24
 
 - Reverted the decoration experiments. The WINE registry switch was prefix wide,

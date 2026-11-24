@@ -115,8 +115,12 @@ stop_started_instance() {
 start_aurora() {
     local prefix="$1" wine_bin="$2" appid="$3" pid
     log "starting Aurora for AppID $appid in $prefix"
+    # Aurora is started as a normal window: the window manager frame provides
+    # moving, resizing, minimising, maximising and closing. Its own top bar is
+    # partly covered by that frame, which is the accepted trade-off.
     WINEPREFIX="$prefix" WINEDEBUG=-all \
         setsid "$wine_bin" "$AURORA_EXE" >/dev/null 2>&1 &
+
     pid=$!
     # wine may fork and leave the launched process behind, so the PID of the
     # launcher says nothing. Ask for the Aurora process itself for a few

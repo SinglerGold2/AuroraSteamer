@@ -273,3 +273,9 @@ otherwise such a path breaks apart and no wine is found.
 Aurora starts inside its own Wine desktop so that its custom title bar is not
 covered by the window manager decoration. The desktop is created with
 `explorer /desktop=aurora,1600x1200` and stopped together with Aurora.
+
+### Window decoration
+
+Aurora runs with a normal window manager frame. Its own top bar is covered by
+that frame because Aurora paints a full-window interface. This is a deliberate
+trade-off; borderless variants were tried and dropped.
