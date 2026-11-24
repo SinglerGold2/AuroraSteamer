@@ -267,3 +267,9 @@ Proton is picked by looking for the `files/bin/wine` binary among the entries of
 The list in `STEAM_COMPAT_TOOL_PATHS` is separated by colons. Folder names may
 contain spaces, as in `Proton - Experimental`. The service splits on colons only,
 otherwise such a path breaks apart and no wine is found.
+
+### Wine virtual desktop
+
+Aurora starts inside its own Wine desktop so that its custom title bar is not
+covered by the window manager decoration. The desktop is created with
+`explorer /desktop=aurora,1600x1200` and stopped together with Aurora.

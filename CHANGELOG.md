@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.7 - 2026-11-24
+
+- Aurora starts inside a Wine virtual desktop (`explorer /desktop=aurora,1600x1200`).
+  Aurora draws its own title bar with the trainer's close button, and the window
+  manager draws its own decoration on top of it, so the button could not be
+  reached. Inside a virtual desktop the window has a normal frame and Aurora's
+  own bar stays visible. The desktop host is stopped together with Aurora.
+
 ## 1.0.6 - 2026-11-24
 
 - Proton directories with spaces work now, for example "Proton - Experimental".
