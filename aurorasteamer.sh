@@ -40,6 +40,10 @@ POLL_IDLE_INTERVAL="${POLL_IDLE_INTERVAL:-30}"
 
 # Seconds to wait before starting Aurora after the game was detected.
 START_DELAY="${START_DELAY:-5}"
+# Some games need a long time before their window is up. Starting Aurora in the
+# same Wine prefix while the game is still initialising blocks the game, so the
+# launcher waits until the game process has been running this long.
+GAME_WARMUP="${GAME_WARMUP:-45}"
 
 # Remembers which game Aurora was started for, as "appid pid marker". The
 # marker is "started" while we believe Aurora runs, and "closed" once it
@@ -269,6 +273,20 @@ main() {
     fi
 
     sleep "$START_DELAY"
+
+    # Wait until the game had time to finish starting. Two Wine processes in the
+    # same prefix at the same moment stall the game, so do not start Aurora while
+    # the game is still coming up.
+    local waited=0
+    while [ "$waited" -lt "$GAME_WARMUP" ]; do
+        sleep 5
+        waited=$((waited + 5))
+        if [ -z "$(find_game_pid)" ]; then
+            say "Spiel beendet, bevor es bereit war"
+            return 0
+        fi
+    done
+
     start_aurora "$prefix" "$wine_bin" "$appid"
 }
 

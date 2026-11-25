@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 - 2026-11-25
+
+- Wait for the game before starting Aurora (`GAME_WARMUP`, default 45 s). Two
+  Wine processes in the same prefix at the same moment stall the game: with
+  Avowed the game stayed in its loading screen as long as Aurora was running.
+  The launcher now checks every five seconds that the game is still there and
+  starts Aurora only afterwards.
+
 ## 1.1.0 - 2026-11-24
 
 - Decision: Aurora runs as a decorated window. The window manager frame gives
